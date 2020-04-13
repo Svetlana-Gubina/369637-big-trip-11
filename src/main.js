@@ -9,7 +9,7 @@ import CardList from './components/card-list.js';
 import {DATE} from './constants.js';
 import Card from './components/card.js';
 import EditEvent from './components/edit-event.js';
-// import Form from './components/form.js';
+import Form from './components/form.js';
 
 const tripInfo = document.querySelector(`.trip-main`);
 const routeInfo = new RouteInfoElement(RouteData);
@@ -28,12 +28,12 @@ render(tripEvents, sort.getElement(), Position.AFTERBEGIN);
 const lists = [];
 new Array(DATE.duration).fill(``).forEach((value, i) => lists.push(new CardList(i + 1, DATE.allDates())));
 lists.forEach((list) => render(tripEvents, list.getElement(), Position.BEFOREEND));
-// if (lists.length) {
-//   lists.forEach((list) => render(tripEvents, list.getElement(), Position.BEFOREEND));
-// } else {
-//   const form = new Form();
-//   render(tripEvents, form.getElement(), Position.BEFOREEND);
-// }
+if (lists.length) {
+  lists.forEach((list) => render(tripEvents, list.getElement(), Position.BEFOREEND));
+} else {
+  const form = new Form();
+  render(tripEvents, form.getElement(), Position.BEFOREEND);
+}
 const days = document.querySelectorAll(`.trip-events__list`);
 const totalField = document.querySelector(`.trip-info__cost-value`);
 
@@ -44,32 +44,32 @@ const renderEvents = (container) => {
     const eventComponent = new Card(event);
     const eventEditComponent = new EditEvent(event);
 
-    // const onEscKeyDown = (evt) => {
-    //   if (evt.key === `Escape` || evt.key === `Esc`) {
-    //     container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-    //     document.removeEventListener(`keydown`, onEscKeyDown);
-    //   }
-    // };
+    const onEscKeyDown = (evt) => {
+      if (evt.key === `Escape` || evt.key === `Esc`) {
+        container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+        document.removeEventListener(`keydown`, onEscKeyDown);
+      }
+    };
 
     eventComponent.getElement()
        .querySelector(`.event__rollup-btn`)
        .addEventListener(`click`, () => {
          container.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
-         // document.addEventListener(`keydown`, onEscKeyDown);
+         document.addEventListener(`keydown`, onEscKeyDown);
        });
 
     eventEditComponent.getElement()
     .querySelector(`.event__rollup-btn`)
        .addEventListener(`click`, () => {
          container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-         // document.removeEventListener(`keydown`, onEscKeyDown);
+         document.removeEventListener(`keydown`, onEscKeyDown);
        });
 
     eventEditComponent.getElement()
       .addEventListener(`submit`, (evt) => {
         evt.preventDefault();
         container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-        // document.removeEventListener(`keydown`, onEscKeyDown);
+        document.removeEventListener(`keydown`, onEscKeyDown);
       });
 
     render(container, eventComponent.getElement(), Position.BEFOREEND);
