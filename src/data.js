@@ -2,7 +2,7 @@ import {DATE, INIT_DATE, MIN_PRICE, MAX_PRICE, DESC, CITIES, AVAILABLE_EVENT_TYP
 import {getRandomOfArray, getRandomInteger, shuffle} from './utils.js';
 
 
-export const RouteInfo = {
+export const RouteData = {
   departurePlace: getRandomOfArray(CITIES),
   point: getRandomOfArray(CITIES),
   destination: getRandomOfArray(CITIES),

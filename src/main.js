@@ -1,48 +1,83 @@
-import {getMenu} from './components/menu.js';
-import {getFiltersForm} from './components/filters-form.js';
-import {getFilter} from './components/filter.js';
-import {getCardList} from './components/card-list.js';
-import {getSort} from './components/sort.js';
-import {getRouteInfoElement} from './components/route-info.js';
+import Menu from './components/menu.js';
+import RouteInfoElement from './components/route-info.js';
+import {Position, render} from './utils.js';
+import {RouteData, getSampleEvents} from './data.js';
+import FiltersForm from './components/filters-form.js';
+import Filters from './components/filter.js';
+import Sort from './components/sort.js';
+import CardList from './components/card-list.js';
 import {DATE} from './constants.js';
-import {RouteInfo, getSampleEvents, getEvent} from './data.js';
-import {getCard} from './components/card.js';
-import {editEvent} from './components/edit-event.js';
-
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
+import Card from './components/card.js';
+import EditEvent from './components/edit-event.js';
+// import Form from './components/form.js';
 
 const tripInfo = document.querySelector(`.trip-main`);
-render(tripInfo, getRouteInfoElement(RouteInfo), `afterbegin`);
+const routeInfo = new RouteInfoElement(RouteData);
+render(tripInfo, routeInfo.getElement(), Position.AFTERBEGIN);
 const tripControls = document.querySelector(`.trip-controls`);
-render(tripControls, getMenu(), `afterbegin`);
-render(tripControls, getFiltersForm(), `beforeend`);
-const filtersForm = document.querySelector(`.trip-filters`);
-render(filtersForm, getFilter(), `afterbegin`);
+const menu = new Menu();
+render(tripControls, menu.getElement(), Position.AFTERBEGIN);
+const filtersForm = new FiltersForm();
+render(tripControls, filtersForm.getElement(), Position.BEFOREEND);
+const smallSort = document.querySelector(`.trip-filters`);
+const filters = new Filters();
+filters.getElement(smallSort);
 const tripEvents = document.querySelector(`.trip-events`);
-render(tripEvents, getSort(), `afterbegin`);
-new Array(DATE.duration).fill(``).forEach((value, i) => render(tripEvents, getCardList(i + 1, DATE.allDates()), `beforeend`));
+const sort = new Sort();
+render(tripEvents, sort.getElement(), Position.AFTERBEGIN);
+const lists = [];
+new Array(DATE.duration).fill(``).forEach((value, i) => lists.push(new CardList(i + 1, DATE.allDates())));
+lists.forEach((list) => render(tripEvents, list.getElement(), Position.BEFOREEND));
+// if (lists.length) {
+//   lists.forEach((list) => render(tripEvents, list.getElement(), Position.BEFOREEND));
+// } else {
+//   const form = new Form();
+//   render(tripEvents, form.getElement(), Position.BEFOREEND);
+// }
 const days = document.querySelectorAll(`.trip-events__list`);
+const totalField = document.querySelector(`.trip-info__cost-value`);
 
 let total = 0;
-
-const getEventsToRender = () => {
+const renderEvents = (container) => {
   let events = getSampleEvents();
-  let eventsTotal = events.map(({cost}) => cost)
-                          .reduce((sum, current) => sum + current, 0);
+  const renderCard = (event) => {
+    const eventComponent = new Card(event);
+    const eventEditComponent = new EditEvent(event);
 
-  total = +eventsTotal;
-  return events.map((event) => getCard(event)).join(``);
+    // const onEscKeyDown = (evt) => {
+    //   if (evt.key === `Escape` || evt.key === `Esc`) {
+    //     container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+    //     document.removeEventListener(`keydown`, onEscKeyDown);
+    //   }
+    // };
+
+    eventComponent.getElement()
+       .querySelector(`.event__rollup-btn`)
+       .addEventListener(`click`, () => {
+         container.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
+         // document.addEventListener(`keydown`, onEscKeyDown);
+       });
+
+    eventEditComponent.getElement()
+    .querySelector(`.event__rollup-btn`)
+       .addEventListener(`click`, () => {
+         container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+         // document.removeEventListener(`keydown`, onEscKeyDown);
+       });
+
+    eventEditComponent.getElement()
+      .addEventListener(`submit`, (evt) => {
+        evt.preventDefault();
+        container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+        // document.removeEventListener(`keydown`, onEscKeyDown);
+      });
+
+    render(container, eventComponent.getElement(), Position.BEFOREEND);
+  };
+  events.forEach((eventMock) => renderCard(eventMock));
+  let costs = events.map(({cost}) => cost).reduce((sum, current) => sum + current, 0);
+  total = total + costs;
 };
-Array.from(days).forEach((value) => render(value, getEventsToRender(), `beforeend`));
-const events = document.querySelectorAll(`.trip-events__item`);
-events[1].innerHTML = ``;
-render(events[1], editEvent(getEvent()), `beforeend`);
 
-const totalField = document.querySelector(`.trip-info__cost`);
-const getTotal = () => {
-  return total;
-};
-render(totalField, getTotal(), `beforeend`);
-
+days.forEach((day) => renderEvents(day));
+totalField.innerHTML = total;
