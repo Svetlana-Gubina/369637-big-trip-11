@@ -7,12 +7,12 @@ export default class Sort extends AbstractComponent {
 
               <div class="trip-sort__item  trip-sort__item--event">
                 <input id="sort-event" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-event" checked>
-                <label class="trip-sort__btn" for="sort-event">Event</label>
+                <label data-sort-type="default" class="trip-sort__btn" for="sort-event">Event</label>
               </div>
 
               <div class="trip-sort__item  trip-sort__item--time">
                 <input id="sort-time" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-time">
-                <label class="trip-sort__btn" for="sort-time">
+                <label data-sort-type="time" class="trip-sort__btn" for="sort-time">
                   Time
                   <svg class="trip-sort__direction-icon" width="8" height="10" viewBox="0 0 8 10">
                     <path d="M2.888 4.852V9.694H5.588V4.852L7.91 5.068L4.238 0.00999987L0.548 5.068L2.888 4.852Z"/>
@@ -22,7 +22,7 @@ export default class Sort extends AbstractComponent {
 
               <div class="trip-sort__item  trip-sort__item--price">
                 <input id="sort-price" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-price">
-                <label class="trip-sort__btn" for="sort-price">
+                <label data-sort-type="price" class="trip-sort__btn" for="sort-price">
                   Price
                   <svg class="trip-sort__direction-icon" width="8" height="10" viewBox="0 0 8 10">
                     <path d="M2.888 4.852V9.694H5.588V4.852L7.91 5.068L4.238 0.00999987L0.548 5.068L2.888 4.852Z"/>
