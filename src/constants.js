@@ -1,4 +1,5 @@
 import {getRandomBoolean} from './utils.js';
+import moment from 'moment';
 
 const MONTHES = new Set([
   `January`,
@@ -81,3 +82,35 @@ export const AVAILABLE_OPTIONS = new Set([
     isAdded: getRandomBoolean(),
   }
 ]);
+
+export const getSelectedOptions = (formData) => {
+  const selectedTitles = Array.from(AVAILABLE_OPTIONS)
+                              .map(({shortTitle}) => shortTitle)
+                              .reduce((acc, option) => formData.get(`event-offer-${option}`) ? [...acc, option] : acc, []);
+
+  const selectedOptions = Array.from(AVAILABLE_OPTIONS)
+                                .reduce((acc, it) => selectedTitles.includes(it.shortTitle) ? [...acc, it] : acc, []);
+
+  return selectedOptions.length ? selectedOptions : null;
+};
+
+export const filterNullProps = (obj) => Object.fromEntries(Object.entries(obj).filter(([key, value]) => value !== null));
+
+export const getFormDateTime = (formData, name) => {
+  formData = {
+    get() {
+      return name;
+    }
+  };
+  const value = formData.get(name);
+  return value ? moment(value).toDate() : null;
+};
+
+export const filteredArray = (arr, item) => {
+  let index = arr.indexOf(item);
+  let newArr = arr.slice();
+  if (index >= 0) {
+    newArr.splice(index, 1);
+  }
+  return newArr;
+};

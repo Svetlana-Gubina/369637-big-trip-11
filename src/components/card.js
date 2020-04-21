@@ -1,15 +1,19 @@
 import AbstractComponent from './abstract-component.js';
+import moment from 'moment';
 
 export default class Card extends AbstractComponent {
-  constructor({eventType, city, cost, hours, durationHours, durationMinutes, option}) {
+  constructor({eventDate, diffTime, eventType, city, cost, options}) {
     super();
     this._eventType = eventType;
     this._city = city;
     this._cost = cost;
-    this._hours = hours;
-    this._durationHours = durationHours;
-    this._durationMinutes = durationMinutes;
-    this._option = option;
+    this._eventStart = eventDate;
+    this._diffTime = diffTime;
+    this._eventEnd = eventDate + this._diffTime;
+    this._duration = moment.duration(this._diffTime);
+    this._durationHrs = this._duration.hours();
+    this._durationMins = this._duration.minutes();
+    this._options = options;
   }
 
   getTemplate() {
@@ -20,12 +24,12 @@ export default class Card extends AbstractComponent {
           <h3 class="event__title">${this._eventType} to ${this._city}</h3>
 
           <div class="event__schedule">
-            <p class="event__time">
-              <time class="event__start-time" datetime="2019-03-18T10:30">${this._hours}:${this._durationMinutes}</time>
-              &mdash;
-              <time class="event__end-time" datetime="2019-03-18T11:00">${this._hours}:${this._durationMinutes}</time>
-            </p>
-            <p class="event__duration">${this._durationHours}H ${this._durationMinutes}M</p>
+          <p class="event__time">
+          <time class="event__start-time" datetime="2019-03-18T10:30">${moment(this._eventStart).format(`hh : mm`)}</time>
+          &mdash;
+          <time class="event__end-time" datetime="2019-03-18T11:00">${moment(this._eventEnd).format(`hh : mm`)}</time>
+          </p>
+          <p class="event__duration">${this._durationHrs}H ${this._durationMins}M</p>
           </div>
 
           <p class="event__price">
@@ -34,11 +38,12 @@ export default class Card extends AbstractComponent {
 
           <h4 class="visually-hidden">Offers:</h4>
           <ul class="event__selected-offers">
+          ${this._options.map((option) => (`
             <li class="event__offer">
-              <span class="event__offer-title">${this._option.title}</span>
+              <span class="event__offer-title">${option.title}</span>
               &plus;
-              &euro;&nbsp;<span class="event__offer-price">${this._option.price}</span>
-             </li>
+              &euro;&nbsp;<span class="event__offer-price">${option.price}</span>
+            </li>`.trim())).join(``)}
           </ul>
 
           <button class="event__rollup-btn" type="button">
