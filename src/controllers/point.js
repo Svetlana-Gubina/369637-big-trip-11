@@ -28,8 +28,8 @@ export default class PointController {
       }
     };
 
-    flatpickr(this._pointEdit.getElement().querySelector(`#event-start-time-1`), {enableTime: true, dateFormat: `d.m.Y H:m`, maxDate: `01.01.2020 00:00`});
-    flatpickr(this._pointEdit.getElement().querySelector(`#event-end-time-1`), {enableTime: true, dateFormat: `d.m.Y H:m`, minDate: new Date(this._eventStart), maxDate: `01.01.2020 00:00`});
+    flatpickr(this._pointEdit.getElement().querySelector(`#event-start-time-1`), {enableTime: true, dateFormat: `d.m.Y H:m`, maxDate: `01.01.2022 00:00`});
+    flatpickr(this._pointEdit.getElement().querySelector(`#event-end-time-1`), {enableTime: true, dateFormat: `d.m.Y H:m`, minDate: new Date(this._eventStart), maxDate: `01.01.2022 00:00`});
 
     this._pointView.getElement()
        .querySelector(`.event__rollup-btn`)
