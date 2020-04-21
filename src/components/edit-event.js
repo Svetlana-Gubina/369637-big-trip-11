@@ -2,6 +2,9 @@ import AbstractComponent from './abstract-component.js';
 import {renderOption} from './option.js';
 import {check, uncheck, getRandomInteger, shuffle} from '../utils.js';
 import {filteredArray, CITIES, AVAILABLE_OPTIONS, AVAILABLE_EVENT_TYPES, DESC} from '../constants.js';
+import flatpickr from '../../node_modules/flatpickr';
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import '../../node_modules/flatpickr/dist/themes/light.css';
 
 export default class EditEvent extends AbstractComponent {
   constructor({eventType, city, cost, options, eventDate, diffTime, photos, description, isFavorite}) {
@@ -21,6 +24,9 @@ export default class EditEvent extends AbstractComponent {
     this._description = description;
     this._isFavorite = isFavorite;
     this._subscribeOnEvents();
+
+    this._flatpickr = null;
+    this._applyFlatpickr();
   }
 
   getTemplate() {
@@ -129,6 +135,29 @@ export default class EditEvent extends AbstractComponent {
             </section>
           </section>
         </form>`.trim();
+  }
+
+  _applyFlatpickr() {
+    if (this._flatpickr) {
+      this._flatpickr.destroy();
+      this._flatpickr = null;
+    }
+
+    const start = this.getElement().querySelector(`#event-start-time-1`);
+    const end = this.getElement().querySelector(`#event-end-time-1`);
+
+    this._flatpickr = flatpickr(start, {
+      enableTime: true,
+      dateFormat: `d.m.Y H:m`,
+      maxDate: `01.01.2022 00:00`
+    });
+
+    this._flatpickr = flatpickr(end, {
+      enableTime: true,
+      dateFormat: `d.m.Y H:m`,
+      minDate: new Date(this._eventStart),
+      maxDate: `01.01.2022 00:00`,
+    });
   }
 
   _subscribeOnEvents() {

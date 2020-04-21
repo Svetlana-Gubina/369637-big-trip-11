@@ -1,7 +1,19 @@
 import AbstractComponent from './abstract-component.js';
 import {CITIES, AVAILABLE_EVENT_TYPES} from '../constants.js';
+import {check, uncheck} from '../utils.js';
+import flatpickr from '../../node_modules/flatpickr';
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import '../../node_modules/flatpickr/dist/themes/light.css';
 
 export default class Form extends AbstractComponent {
+  constructor() {
+    super();
+    this._eventStart = Date.now();
+    this._subscribeOnEvents();
+    this._flatpickr = null;
+    this._applyFlatpickr();
+  }
+
   getTemplate() {
     return `<form class="trip-events__item  event  event--edit" action="#" method="post">
     <header class="event__header">
@@ -71,6 +83,62 @@ export default class Form extends AbstractComponent {
       <button class="event__reset-btn" type="reset">Cancel</button>
     </header>
   </form>`.trim();
+  }
+
+  _applyFlatpickr() {
+    if (this._flatpickr) {
+      this._flatpickr.destroy();
+      this._flatpickr = null;
+    }
+
+    const start = this.getElement().querySelector(`#event-start-time-1`);
+    const end = this.getElement().querySelector(`#event-end-time-1`);
+
+    this._flatpickr = flatpickr(start, {
+      enableTime: true,
+      dateFormat: `d.m.Y H:m`,
+      maxDate: `01.01.2022 00:00`
+    });
+
+    this._flatpickr = flatpickr(end, {
+      enableTime: true,
+      dateFormat: `d.m.Y H:m`,
+      minDate: new Date(this._eventStart),
+      maxDate: `01.01.2022 00:00`,
+    });
+  }
+
+  _subscribeOnEvents() {
+    this.getElement()
+    .querySelector(`.event__type-list`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      if (evt.target.tagName === `LABEL`) {
+        check(this.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
+        uncheck(this.getElement().querySelector(`.event__type-toggle`));
+        this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
+        let type = AVAILABLE_EVENT_TYPES.find((it) => it === evt.target.textContent);
+        let prep;
+        if (AVAILABLE_EVENT_TYPES.slice(0, 6).includes(type)) {
+          prep = ` to `;
+        } else {
+          prep = ` in `;
+        }
+        this.getElement().querySelector(`.event__label`).textContent = type + prep;
+      }
+    });
+
+    this.getElement()
+    .querySelector(`.event__input--destination`).addEventListener(`change`, (evt) => {
+      this._city = evt.target.value;
+    });
+
+    this.getElement()
+    .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
+      if (evt.key === `Enter`) {
+        this._cost = evt.target.value;
+      }
+    });
+
   }
 }
 

@@ -1,12 +1,15 @@
 import {render, unrender, Position, check} from '../utils.js';
-import {getSampleEvents} from '../data.js';
-import {DATE} from '../constants.js';
+import {getSampleEvents, getEvent} from '../data.js';
+import {DATE, filterNullProps, getFormDateTime} from '../constants.js';
 import CardItem from '../components/card-item.js';
 import Form from '../components/form.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import Slot from '../components/slot.js';
 import PointController from './point.js';
+import Chart from 'chart.js';
+import moment from 'moment';
+
 
 export default class TripController {
   constructor(container, totalField) {
@@ -47,6 +50,16 @@ export default class TripController {
     this._sort.getElement().addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
   }
 
+  show() {
+    this._cardList.getElement().classList.remove(`visually-hidden`);
+    this._sort.getElement().classList.remove(`visually-hidden`);
+  }
+
+  hide() {
+    this._cardList.getElement().classList.add(`visually-hidden`);
+    this._sort.getElement().classList.add(`visually-hidden`);
+  }
+
 
   _renderPoint(point, container) {
     const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList);
@@ -62,13 +75,11 @@ export default class TripController {
     const index = this._allEvents.findIndex((it) => it === oldData);
     if (newData === null) {
       this._allEvents = [...this._allEvents.slice(0, index), ...this._allEvents.slice(index + 1)];
-
       const slots = this._container.querySelectorAll(`.trip-events__item`);
       const lastSlot = Array.from(slots)[slots.length - 1];
       unrender(lastSlot);
     } else if (oldData === null) {
       this._allEvents.unshift(newData);
-
       const lists = this._container.querySelectorAll(`.trip-events__list`);
       const lastlist = Array.from(lists)[lists.length - 1];
       const additionalSlot = new Slot();
@@ -77,6 +88,32 @@ export default class TripController {
       this._allEvents[this._allEvents.findIndex((it) => it === oldData)] = newData;
     }
     this._renderEvents();
+  }
+
+  addEvent() {
+    render(this._container, this._form.getElement(), Position.AFTERBEGIN);
+    this._form.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      unrender(this._form.getElement());
+      this._form.removeElement();
+    });
+
+    this._form.getElement().addEventListener(`submit`, (evt) => {
+      evt.preventDefault();
+      const formData = new FormData(this._form.getElement().querySelector(`.event--edit`));
+      const defaultEvent = getEvent();
+      const formEntry = filterNullProps({
+        eventType: formData.get(`event-type`),
+        eventStart: getFormDateTime(formData.get(`event-start-time`)),
+        eventEnd: getFormDateTime(formData.get(`event-end-time`)),
+        city: formData.get(`event-destination`),
+        cost: Number(formData.get(`event-price`)),
+      });
+      const newevent = Object.assign({}, defaultEvent, formEntry);
+      this._onDataChange(newevent, null);
+      unrender(this._form.getElement());
+      this._form.removeElement();
+    });
   }
 
   _renderEvents() {
@@ -143,6 +180,23 @@ export default class TripController {
     this._totalField.innerHTML = total;
   }
 
+  filterEvents(filtername) {
+    this._cardList.getElement().innerHTML = ``;
+    switch (filtername) {
+      case `Future`:
+        const futureEvents = this._allEvents.slice().filter((event) => event.eventDate > Date.now());
+        futureEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
+        break;
+      case `Past`:
+        const pastEvents = this._allEvents.slice().filter((event) => event.eventDate < Date.now());
+        pastEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
+        break;
+      case `Everything`:
+        this._renderDefault();
+        break;
+    }
+  }
+
   _onSortLinkClick(evt) {
     evt.preventDefault();
     if (evt.target.tagName !== `LABEL`) {
@@ -166,5 +220,326 @@ export default class TripController {
         this._renderDefault();
         break;
     }
+  }
+
+  createChart(canvasMoney, canvasTransport, canvasTime) {
+    // throw new Error(`Method not implemented: createChart`);
+    const moneyCtx = canvasMoney.getContext(`2d`);
+    const transportCtx = canvasTransport.getContext(`2d`);
+    const timeCtx = canvasTime.getContext(`2d`);
+
+    const getMoneyData = (eventType) => {
+      return this._allEvents.reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
+    };
+    const rideMoneyData = getMoneyData(`Taxi`) + getMoneyData(`bus`) + getMoneyData(`transport`) + getMoneyData(`train`);
+    const moneyChart = new Chart(moneyCtx, {
+      type: `horizontalBar`,
+      data: {
+        labels: [`FLY`, `STAY`, `DRIVE`, `LOOK`, `EAT`, `RIDE`],
+        datasets: [{
+          data: [getMoneyData(`flight`), getMoneyData(`check-in`), getMoneyData(`drive`), getMoneyData(`sightseeing`), getMoneyData(`restaurant`), rideMoneyData],
+          backgroundColor: [
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+          ],
+          borderColor: [
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+          ],
+          borderWidth: 1,
+          barThickness: 40
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false
+            },
+          }],
+          xAxes: [{
+            ticks: {
+              display: false,
+              min: 20
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false
+            }
+          }]
+        },
+        legend: {
+          display: false
+        },
+        title: {
+          position: `left`,
+          display: true,
+          text: `MONEY`,
+          fontSize: 16,
+          fontColor: `#000000`
+        },
+        tooltips: {
+          enabled: false
+        },
+        layout: {
+          padding: {
+            bottom: 50
+          }
+        },
+        hover: {
+          animationDuration: 0
+        },
+        animation: {
+          duration: 1,
+          onComplete() {
+            let chartInstance = this.chart;
+            let ctx = chartInstance.ctx;
+            let icons = [`flight`, `check-in`, `drive`, `sightseeing`, `check-in`, `bus`];
+            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+            ctx.textAlign = `center`;
+            ctx.textBaseline = `bottom`;
+            this.data.datasets.forEach(function (dataset, i) {
+              let meta = chartInstance.controller.getDatasetMeta(i);
+              meta.data.forEach(function (bar, index) {
+                let img = new Image();
+                img.src = `img/icons/${icons[index]}.png`;
+                img.onload = () => {
+                  ctx.drawImage(img, 37, bar._model.y - 8, 15, 15);
+                };
+                if (dataset.data[index] > 0) {
+                  let data = String.fromCharCode(8364) + dataset.data[index];
+                  ctx.fillText(data, bar._model.x - 20, bar._model.y + 5);
+                }
+              });
+            });
+          }
+        }
+      }
+    });
+
+    const getTransportData = (eventType) => {
+      return this._allEvents.filter((evt) => evt.eventType === eventType).length;
+    };
+    const rideData = getTransportData(`taxi`) + getTransportData(`bus`) + getTransportData(`transport`) + getTransportData(`train`);
+
+    const transportChart = new Chart(transportCtx, {
+      type: `horizontalBar`,
+      data: {
+        labels: [`DRIVE`, `RIDE`, `FLY`, `SAIL`],
+        datasets: [{
+          data: [getTransportData(`drive`), rideData, getTransportData(`flight`), getTransportData(`ship`)],
+          backgroundColor: [
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+          ],
+          borderColor: [
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+          ],
+          borderWidth: 1,
+          barThickness: 40
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false
+            },
+          }],
+          xAxes: [{
+            ticks: {
+              display: false,
+              min: 0
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false
+            }
+          }]
+        },
+        legend: {
+          display: false
+        },
+        title: {
+          position: `left`,
+          display: true,
+          text: `TRANSPORT`,
+          fontSize: 16,
+          fontColor: `#000000`
+        },
+        tooltips: {
+          enabled: false
+        },
+        layout: {
+          padding: {
+            bottom: 50
+          }
+        },
+        hover: {
+          animationDuration: 0
+        },
+        animation: {
+          duration: 1,
+          onComplete() {
+            let chartInstance = this.chart;
+            let ctx = chartInstance.ctx;
+            let icons = [`drive`, `bus`, `flight`, `ship`];
+            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+            ctx.textAlign = `center`;
+            ctx.textBaseline = `bottom`;
+            this.data.datasets.forEach(function (dataset, i) {
+              let meta = chartInstance.controller.getDatasetMeta(i);
+              meta.data.forEach(function (bar, index) {
+                let img = new Image();
+                img.src = `img/icons/${icons[index]}.png`;
+                img.onload = () => {
+                  ctx.drawImage(img, 37, bar._model.y - 8, 15, 15);
+                };
+                if (dataset.data[index] > 0) {
+                  let data = dataset.data[index] + `x`;
+                  ctx.fillText(data, bar._model.x - 15, bar._model.y + 5);
+                }
+              });
+            });
+          }
+        }
+      }
+    });
+
+    const getPlaceTimeSpent = (eventType) => {
+      const hotels = this._allEvents.filter((evt) => evt.eventType === eventType);
+      let placeDurations = [];
+      for (const evt of hotels) {
+        placeDurations.push(moment.duration(evt.diffTime).hours());
+      }
+      return placeDurations.reduce((sum, current) => sum + current, 0);
+    };
+
+    const getCityTimeSpent = (city) => {
+      const hotels = this._allEvents.filter((evt) => evt.city === city);
+      let cityDurations = [];
+      for (const evt of hotels) {
+        cityDurations.push(moment.duration(evt.diffTime).hours());
+      }
+      return cityDurations.reduce((sum, current) => sum + current, 0);
+    };
+
+    const timeChart = new Chart(timeCtx, {
+      type: `horizontalBar`,
+      data: {
+        labels: [`HOTEL`, `TO AIRPORT`, `TO GENEVA`, `TO CHANOIX`],
+        datasets: [{
+          data: [getPlaceTimeSpent(`check`), getPlaceTimeSpent(`flight`),
+            getCityTimeSpent(`Geneva`), getCityTimeSpent(`Chamonix`)],
+          backgroundColor: [
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+          ],
+          borderColor: [
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+            `rgba(255, 255, 255, 1)`,
+          ],
+          borderWidth: 1,
+          barThickness: 40
+        }]
+      },
+      options: {
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false
+            },
+          }],
+          xAxes: [{
+            ticks: {
+              display: false,
+              min: 0
+            },
+            gridLines: {
+              display: false,
+              drawBorder: false
+            },
+          }]
+        },
+        legend: {
+          display: false
+        },
+        title: {
+          position: `left`,
+          display: true,
+          text: `TIME SPENT`,
+          fontSize: 16,
+          fontColor: `#000000`
+        },
+        tooltips: {
+          enabled: false
+        },
+        hover: {
+          animationDuration: 0
+        },
+        animation: {
+          duration: 1,
+          onComplete() {
+            let chartInstance = this.chart;
+            let ctx = chartInstance.ctx;
+            let icons = [`check-in`, `flight`, `sightseeing`, `sightseeing`];
+            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+            ctx.textAlign = `center`;
+            ctx.textBaseline = `bottom`;
+            this.data.datasets.forEach(function (dataset, i) {
+              let meta = chartInstance.controller.getDatasetMeta(i);
+              meta.data.forEach(function (bar, index) {
+                let img = new Image();
+                img.src = `img/icons/${icons[index]}.png`;
+                img.onload = () => {
+                  ctx.drawImage(img, 35, bar._model.y - 8, 15, 15);
+                };
+                if (dataset.data[index] > 0) {
+                  let data = dataset.data[index] + `H`;
+                  ctx.fillText(data, bar._model.x - 15, bar._model.y + 5);
+                }
+              });
+            });
+          }
+        }
+      }
+    });
   }
 }
