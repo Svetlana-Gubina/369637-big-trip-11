@@ -22,6 +22,7 @@ export const getEvent = () => ({
   options: shuffle(Array.from(AVAILABLE_OPTIONS).slice(0, getRandomInteger(1, 5))),
   photos: new Array(5).fill().map(() => getRandomInteger(1, 30)),
   description: shuffle(DESC).slice(0, getRandomInteger(1, 3)),
+  isFavorite: true,
 });
 
 

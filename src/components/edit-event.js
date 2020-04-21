@@ -1,6 +1,6 @@
 import AbstractComponent from './abstract-component.js';
 import {renderOption} from './option.js';
-// import {check, uncheck, getRandomInteger, shuffle} from '../utils.js';
+import {check, uncheck, getRandomInteger, shuffle} from '../utils.js';
 import {filteredArray, CITIES, AVAILABLE_OPTIONS, AVAILABLE_EVENT_TYPES, DESC} from '../constants.js';
 
 export default class EditEvent extends AbstractComponent {
@@ -73,12 +73,12 @@ export default class EditEvent extends AbstractComponent {
                   <label class="visually-hidden" for="event-start-time-1">
                     From
                   </label>
-                  <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${new Date(this._eventDate).toLocaleDateString()} ${this._hours}:${this._durationMinutes}">
+                  <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${new Date(this._eventStart).toLocaleDateString()} ${this._hoursStart}:${this._minutesStart}">
                   &mdash;
                   <label class="visually-hidden" for="event-end-time-1">
                     To
                   </label>
-                  <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${new Date(this._eventDate).toLocaleDateString()} ${this._hours}:${this._durationMinutes}">
+                  <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${new Date(this._eventEnd).toLocaleDateString()} ${this._hoursEnd}:${this._minutesEnd}">
                 </div>
 
                 <div class="event__field-group  event__field-group--price">
@@ -92,7 +92,7 @@ export default class EditEvent extends AbstractComponent {
                 <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
                 <button class="event__reset-btn" type="reset">Delete</button>
 
-                <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" checked>
+                <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${this._isFavorite ? `checked` : ``}>
                 <label class="event__favorite-btn" for="event-favorite-1">
                   <span class="visually-hidden">Add to favorite</span>
                   <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -132,6 +132,59 @@ export default class EditEvent extends AbstractComponent {
   }
 
   _subscribeOnEvents() {
+    this.getElement()
+    .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
+      evt.preventDefault();
+      if (this._isFavorite) {
+        this._isFavorite = false;
+      } else {
+        this._isFavorite = true;
+      }
+    });
+
+    this.getElement()
+    .querySelector(`.event__type-list`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      if (evt.target.tagName === `LABEL`) {
+        check(this.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
+        uncheck(this.getElement().querySelector(`.event__type-toggle`));
+        this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
+        let type = AVAILABLE_EVENT_TYPES.find((it) => it === evt.target.textContent);
+        let prep;
+        if (AVAILABLE_EVENT_TYPES.slice(0, 6).includes(type)) {
+          prep = ` to `;
+        } else {
+          prep = ` in `;
+        }
+        this.getElement().querySelector(`.event__label`).textContent = type + prep;
+
+        let newOptions = shuffle(Array.from(AVAILABLE_OPTIONS).slice(0, getRandomInteger(1, 3)));
+        this.getElement().querySelector(`.event__available-offers`).innerHTML = `${newOptions.map((option) => renderOption(option)).join(``)}`;
+        this._options = newOptions;
+      }
+    });
+
+    this.getElement()
+    .querySelector(`.event__input--destination`).addEventListener(`change`, (evt) => {
+      let newDesc = shuffle(DESC).slice(0, getRandomInteger(1, 3));
+      this.getElement().querySelector(`.event__destination-description`).textContent = newDesc;
+
+      let newPhotos = new Array(5).fill().map(() => getRandomInteger(1, 30));
+      this.getElement().querySelector(`.event__photos-tape`).innerHTML = `${newPhotos.map((photo) => (`
+      <img class="event__photo" src="http://picsum.photos/300/150?r=${photo}" alt="Event photo">`
+      .trim())).join(``)}`;
+
+      this._photos = newPhotos;
+      this._description = newDesc;
+      this._city = evt.target.value;
+    });
+
+    this.getElement()
+    .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
+      if (evt.key === `Enter`) {
+        this._cost = evt.target.value;
+      }
+    });
 
   }
 }
