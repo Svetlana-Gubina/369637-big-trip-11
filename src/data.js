@@ -12,18 +12,13 @@ export const RouteData = {
   returnMonth: DATE.endMonth,
 };
 
-const date = new Date();
 
 export const getEvent = () => ({
   eventType: getRandomOfArray(AVAILABLE_EVENT_TYPES.slice(0, 7)),
-  enothterEventType: AVAILABLE_EVENT_TYPES[2],
   eventDate: INIT_DATE,
   city: getRandomOfArray(CITIES),
   cost: getRandomInteger(MIN_PRICE, MAX_PRICE),
-  hours: date.getHours(),
-  durationHours: getRandomInteger(1, 5),
-  durationMinutes: getRandomInteger(10, 50),
-  option: getRandomOfArray(Array.from(AVAILABLE_OPTIONS)),
+  diffTime: getRandomInteger(1800000, 18000000),
   options: shuffle(Array.from(AVAILABLE_OPTIONS).slice(0, getRandomInteger(1, 5))),
   photos: new Array(5).fill().map(() => getRandomInteger(1, 30)),
   description: shuffle(DESC).slice(0, getRandomInteger(1, 3)),

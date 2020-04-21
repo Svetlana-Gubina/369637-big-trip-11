@@ -1,4 +1,4 @@
-import {render, Position, check} from '../utils.js';
+import {render, unrender, Position, check} from '../utils.js';
 import {getSampleEvents} from '../data.js';
 import {DATE} from '../constants.js';
 import CardItem from '../components/card-item.js';
@@ -6,8 +6,7 @@ import Form from '../components/form.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import Slot from '../components/slot.js';
-import Card from '../components/card.js';
-import EditEvent from '../components/edit-event.js';
+import PointController from './point.js';
 
 export default class TripController {
   constructor(container, totalField) {
@@ -18,6 +17,9 @@ export default class TripController {
     this._sort = new Sort();
     this._days = [];
     this._allEvents = [];
+    this._onChangeView = this._onChangeView.bind(this);
+    this._onDataChange = this._onDataChange.bind(this);
+    this._subscriptions = [];
   }
 
   init() {
@@ -32,7 +34,7 @@ export default class TripController {
         render(this._cardList.getElement().querySelector(`.trip-days`), item.getElement(), Position.BEFOREEND);
         const slots = item.getElement().querySelectorAll(`.trip-events__item`);
         for (let j = 0; j < Array.from(slots).length; j++) {
-          this._renderCard(events[j], Array.from(slots)[j]);
+          this._renderPoint(events[j], Array.from(slots)[j]);
         }
       }
     } else {
@@ -46,34 +48,62 @@ export default class TripController {
   }
 
 
-  _renderCard(event, container) {
-    const eventComponent = new Card(event);
-    const eventEditComponent = new EditEvent(event);
-    const onEscKeyDown = (evt) => {
-      if (evt.key === `Escape` || evt.key === `Esc`) {
-        container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-        document.removeEventListener(`keydown`, onEscKeyDown);
+  _renderPoint(point, container) {
+    const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList);
+    pointController.init();
+    this._subscriptions.push(pointController.setDefaultView.bind(pointController));
+  }
+
+  _onChangeView() {
+    this._subscriptions.forEach((it) => it());
+  }
+
+  _onDataChange(newData, oldData) {
+    const index = this._allEvents.findIndex((it) => it === oldData);
+    if (newData === null) {
+      this._allEvents = [...this._allEvents.slice(0, index), ...this._allEvents.slice(index + 1)];
+
+      const slots = this._container.querySelectorAll(`.trip-events__item`);
+      const lastSlot = Array.from(slots)[slots.length - 1];
+      unrender(lastSlot);
+    } else if (oldData === null) {
+      this._allEvents.unshift(newData);
+
+      const lists = this._container.querySelectorAll(`.trip-events__list`);
+      const lastlist = Array.from(lists)[lists.length - 1];
+      const additionalSlot = new Slot();
+      render(lastlist, additionalSlot.getElement(), Position.BEFOREEND);
+    } else {
+      this._allEvents[this._allEvents.findIndex((it) => it === oldData)] = newData;
+    }
+    this._renderEvents();
+  }
+
+  _renderEvents() {
+    const slots = this._cardList.getElement().querySelectorAll(`.trip-events__item`);
+    for (const slot of slots) {
+      unrender(slot.children[0]);
+    }
+
+    if (this._days.length) {
+      for (let j = 0; j < Array.from(slots).length; j++) {
+        this._renderPoint(this._allEvents[j], Array.from(slots)[j]);
       }
-    };
-    eventComponent.getElement()
-       .querySelector(`.event__rollup-btn`)
-       .addEventListener(`click`, () => {
-         container.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
-         document.addEventListener(`keydown`, onEscKeyDown);
-       });
-    eventEditComponent.getElement()
-    .querySelector(`.event__rollup-btn`)
-       .addEventListener(`click`, () => {
-         container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-         document.removeEventListener(`keydown`, onEscKeyDown);
-       });
-    eventEditComponent.getElement()
-      .addEventListener(`submit`, (evt) => {
-        evt.preventDefault();
-        container.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      });
-    render(container, eventComponent.getElement(), Position.BEFOREEND);
+    } else {
+      render(this._container, this._form.getElement(), Position.AFTERBEGIN);
+    }
+
+    const dayItems = this._container.querySelectorAll(`.trip-days__item`);
+    for (const day of dayItems) {
+      const eventItems = day.querySelector(`.trip-events__list`).children;
+      if (eventItems.length === 0) {
+        unrender(day);
+      }
+    }
+
+    let costs = this._allEvents.reduce((sum, current) => sum + current.cost, 0);
+    this._totalField.innerHTML = costs;
+    this._sort.getElement().addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
   }
 
   _renderDefault() {
@@ -91,7 +121,7 @@ export default class TripController {
       }
       const slots = this._container.querySelectorAll(`.trip-events__item`);
       for (let j = 0; j < Array.from(slots).length; j++) {
-        this._renderCard(this._allEvents[j], Array.from(slots)[j]);
+        this._renderPoint(this._allEvents[j], Array.from(slots)[j]);
       }
       if (restEvents) {
         let restEventsToRender = this._allEvents.slice(-restEvents);
@@ -126,11 +156,11 @@ export default class TripController {
     switch (evt.target.dataset.sortType) {
       case `time`:
         const sortedByTimeEvents = this._allEvents.slice().sort((a, b) => (b.hoursEnd - b.hoursStart) - (a.hoursEnd - a.hoursStart));
-        sortedByTimeEvents.forEach((taskMock) => this._renderCard(taskMock, this._cardList.getElement()));
+        sortedByTimeEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
         break;
       case `price`:
         const sortedByPriceEvents = this._allEvents.slice().sort((a, b) => b.cost - a.cost);
-        sortedByPriceEvents.forEach((taskMock) => this._renderCard(taskMock, this._cardList.getElement()));
+        sortedByPriceEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
         break;
       case `default`:
         this._renderDefault();
