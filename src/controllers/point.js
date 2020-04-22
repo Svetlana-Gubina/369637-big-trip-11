@@ -1,9 +1,6 @@
 import {render, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import flatpickr from '../../node_modules/flatpickr';
-import '../../node_modules/flatpickr/dist/flatpickr.min.css';
-import '../../node_modules/flatpickr/dist/themes/light.css';
 import {getFormDateTime, filterNullProps, getSelectedOptions} from '../constants.js';
 
 export default class PointController {
@@ -27,9 +24,6 @@ export default class PointController {
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
     };
-
-    flatpickr(this._pointEdit.getElement().querySelector(`#event-start-time-1`), {enableTime: true, dateFormat: `d.m.Y H:m`, maxDate: `01.01.2022 00:00`});
-    flatpickr(this._pointEdit.getElement().querySelector(`#event-end-time-1`), {enableTime: true, dateFormat: `d.m.Y H:m`, minDate: new Date(this._eventStart), maxDate: `01.01.2022 00:00`});
 
     this._pointView.getElement()
        .querySelector(`.event__rollup-btn`)
