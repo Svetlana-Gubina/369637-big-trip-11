@@ -2,17 +2,17 @@ import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
 
 export default class Card extends AbstractComponent {
-  constructor({eventDate, diffTime, eventType, city, cost, options}) {
+  constructor({id, eventType, eventStart, eventEnd, city, cost, options}) {
     super();
+    this._id = id;
     this._eventType = eventType;
-    this._city = city;
-    this._cost = cost;
-    this._eventStart = eventDate;
-    this._diffTime = diffTime;
-    this._eventEnd = eventDate + this._diffTime;
-    this._duration = moment.duration(this._diffTime);
+    this._eventStart = eventStart;
+    this._eventEnd = eventEnd;
+    this._duration = moment.duration(this._eventEnd - this._eventStart);
     this._durationHrs = this._duration.hours();
     this._durationMins = this._duration.minutes();
+    this._city = city;
+    this._cost = cost;
     this._options = options;
   }
 
@@ -51,4 +51,5 @@ export default class Card extends AbstractComponent {
           </button>
         </div>`.trim();
   }
+
 }

@@ -1,14 +1,18 @@
 import {render, unrender, Position, check} from '../utils.js';
-import {getSampleEvents, getEvent} from '../data.js';
-import {DATE, filterNullProps, getFormDateTime} from '../constants.js';
-import CardItem from '../components/card-item.js';
+import {getEvent} from '../data.js';
+import {filterNullProps, getFormDateTime} from '../constants.js';
+import Day from '../components/day.js';
 import Form from '../components/form.js';
 import CardList from '../components/card-list.js';
-import Sort from '../components/sort.js';
-import Slot from '../components/slot.js';
 import PointController from './point.js';
 import Chart from 'chart.js';
 import moment from 'moment';
+import API from '../api.js';
+import Model from '../model.js';
+
+const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 
 export default class TripController {
@@ -17,47 +21,53 @@ export default class TripController {
     this._totalField = totalField;
     this._form = new Form();
     this._cardList = new CardList();
-    this._sort = new Sort();
     this._days = [];
-    this._allEvents = [];
     this._onChangeView = this._onChangeView.bind(this);
     this._onDataChange = this._onDataChange.bind(this);
     this._subscriptions = [];
   }
 
-  init() {
-    render(this._container, this._sort.getElement(), Position.AFTERBEGIN);
+  init(data) {
+    // console.log(data);
     render(this._container, this._cardList.getElement(), Position.BEFOREEND);
-    this._days = new Array(DATE.duration).fill(``);
-    if (this._days.length) {
-      for (let i = 0; i < this._days.length; i++) {
-        let events = getSampleEvents();
-        this._allEvents.push(...events);
-        let item = new CardItem(i + 1, DATE.allDates(), events);
-        render(this._cardList.getElement().querySelector(`.trip-days`), item.getElement(), Position.BEFOREEND);
-        const slots = item.getElement().querySelectorAll(`.trip-events__item`);
-        for (let j = 0; j < Array.from(slots).length; j++) {
-          this._renderPoint(events[j], Array.from(slots)[j]);
-        }
+
+    let count = 1;
+    data.forEach((item) => {
+      let start = moment(item.eventStart).date();
+
+      let nextDay = new Day(count, start);
+      let dayIndex = this._days.findIndex((it) => it._date === start);
+      if (dayIndex !== -1) {
+        this._days[dayIndex]._points.push(item);
+      } else {
+        count++;
+        this._days.push(nextDay);
+        nextDay._points.push(item);
       }
-    } else {
-      render(this._container, this._form.getElement(), Position.AFTERBEGIN);
+    });
+
+    for (let day of this._days) {
+      const slots = day.getElement().querySelectorAll(`.trip-events__item`);
+      for (let point of day._points) {
+        let slot = Array.from(slots).find((it) => it.id === point.id);
+        this._renderPoint(point, slot);
+      }
+      render(this._cardList.getElement().querySelector(`.trip-days`), day.getElement(), Position.BEFOREEND);
     }
+
     let total = 0;
-    let costs = this._allEvents.reduce((sum, current) => sum + current.cost, 0);
+    let costs = data.reduce((sum, current) => sum + current.cost, 0);
     total = total + costs;
     this._totalField.innerHTML = total;
-    this._sort.getElement().addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
   }
+
 
   show() {
     this._cardList.getElement().classList.remove(`visually-hidden`);
-    this._sort.getElement().classList.remove(`visually-hidden`);
   }
 
   hide() {
     this._cardList.getElement().classList.add(`visually-hidden`);
-    this._sort.getElement().classList.add(`visually-hidden`);
   }
 
 
@@ -71,26 +81,30 @@ export default class TripController {
     this._subscriptions.forEach((it) => it());
   }
 
-  _onDataChange(newData, oldData) {
-    const index = this._allEvents.findIndex((it) => it === oldData);
-    if (newData === null) {
-      this._allEvents = [...this._allEvents.slice(0, index), ...this._allEvents.slice(index + 1)];
-      const slots = this._container.querySelectorAll(`.trip-events__item`);
-      const lastSlot = Array.from(slots)[slots.length - 1];
-      unrender(lastSlot);
-    } else if (oldData === null) {
-      this._allEvents.unshift(newData);
-      const lists = this._container.querySelectorAll(`.trip-events__list`);
-      const lastlist = Array.from(lists)[lists.length - 1];
-      const additionalSlot = new Slot();
-      render(lastlist, additionalSlot.getElement(), Position.BEFOREEND);
-    } else {
-      this._allEvents[this._allEvents.findIndex((it) => it === oldData)] = newData;
+  _onDataChange(actionType, update) {
+    switch (actionType) {
+      case `update`:
+        api.updateEvent({
+          id: update.id,
+          data: update.toRAW()
+        }).then((data) => this.init(data));
+        break;
+      case `delete`:
+        api.deleteEvent({
+          id: update.id
+        })
+          .then(() => api.getData())
+          .then((data) => this.init(data));
+        break;
     }
-    this._renderEvents();
   }
 
-  addEvent() {
+
+  addEvent(evs) {
+    this._cardList.getElement().innerHTML = `<ul class="trip-days">
+          </ul>`;
+    this._days = [];
+    this.init(evs);
     render(this._container, this._form.getElement(), Position.AFTERBEGIN);
     this._form.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, (evt) => {
       evt.preventDefault();
@@ -109,95 +123,50 @@ export default class TripController {
         city: formData.get(`event-destination`),
         cost: Number(formData.get(`event-price`)),
       });
-      const newevent = Object.assign({}, defaultEvent, formEntry);
-      this._onDataChange(newevent, null);
+
+      const newEvent = Object.assign({}, defaultEvent, formEntry);
+      const model = Model.parseEvent(newEvent);
+
+      api.createEvent({
+        id: model.id,
+        data: model.toRAW()
+      }).then((data) => this.init(data));
+
       unrender(this._form.getElement());
       this._form.removeElement();
     });
   }
 
-  _renderEvents() {
-    const slots = this._cardList.getElement().querySelectorAll(`.trip-events__item`);
-    for (const slot of slots) {
-      unrender(slot.children[0]);
-    }
+  // _renderEvents() {
+  // }
 
-    if (this._days.length) {
-      for (let j = 0; j < Array.from(slots).length; j++) {
-        this._renderPoint(this._allEvents[j], Array.from(slots)[j]);
-      }
+
+  filterEvents(currentFilter, data, evt) {
+    evt.preventDefault();
+    if (evt.target.tagName !== `LABEL`) {
+      return;
     } else {
-      render(this._container, this._form.getElement(), Position.AFTERBEGIN);
-    }
-
-    const dayItems = this._container.querySelectorAll(`.trip-days__item`);
-    for (const day of dayItems) {
-      const eventItems = day.querySelector(`.trip-events__list`).children;
-      if (eventItems.length === 0) {
-        unrender(day);
+      this._cardList.getElement().innerHTML = ``;
+      switch (currentFilter) {
+        case `Future`:
+          const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());
+          futureEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+          break;
+        case `Past`:
+          const pastEvents = data.slice().filter((event) => event.eventEnd < Date.now());
+          pastEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+          break;
+        case `Everything`:
+          this._cardList.getElement().innerHTML = `<ul class="trip-days">
+          </ul>`;
+          this._days = [];
+          this.init(data);
+          break;
       }
-    }
-
-    let costs = this._allEvents.reduce((sum, current) => sum + current.cost, 0);
-    this._totalField.innerHTML = costs;
-    this._sort.getElement().addEventListener(`click`, (evt) => this._onSortLinkClick(evt));
-  }
-
-  _renderDefault() {
-    this._cardList.getElement().innerHTML = `<ul class="trip-days">
-    </ul>`;
-    if (this._days.length) {
-      const eventsPerDay = this._allEvents.length / this._days.length;
-      const eventsPerDayToRender = Math.trunc(eventsPerDay);
-      const restEvents = this._allEvents.length - eventsPerDayToRender * this._days.length;
-
-      for (let i = 0; i < this._days.length; i++) {
-        const points = new Array(eventsPerDayToRender).fill(``);
-        let item = new CardItem(i + 1, DATE.allDates(), points);
-        render(this._cardList.getElement().querySelector(`.trip-days`), item.getElement(), Position.BEFOREEND);
-      }
-      const slots = this._container.querySelectorAll(`.trip-events__item`);
-      for (let j = 0; j < Array.from(slots).length; j++) {
-        this._renderPoint(this._allEvents[j], Array.from(slots)[j]);
-      }
-      if (restEvents) {
-        let restEventsToRender = this._allEvents.slice(-restEvents);
-        const lists = this._container.querySelectorAll(`.trip-events__list`);
-        const lastlist = Array.from(lists)[lists.length - 1];
-        for (let event of restEventsToRender) {
-          const additionalSlot = new Slot();
-          render(lastlist, additionalSlot.getElement(), Position.BEFOREEND);
-          this._renderCard(event, additionalSlot.getElement());
-        }
-      }
-    } else {
-      render(this._container, this._form.getElement(), Position.AFTERBEGIN);
-    }
-
-    let total = 0;
-    let costs = this._allEvents.reduce((sum, current) => sum + current.cost, 0);
-    total = total + costs;
-    this._totalField.innerHTML = total;
-  }
-
-  filterEvents(filtername) {
-    this._cardList.getElement().innerHTML = ``;
-    switch (filtername) {
-      case `Future`:
-        const futureEvents = this._allEvents.slice().filter((event) => event.eventDate > Date.now());
-        futureEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
-        break;
-      case `Past`:
-        const pastEvents = this._allEvents.slice().filter((event) => event.eventDate < Date.now());
-        pastEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
-        break;
-      case `Everything`:
-        this._renderDefault();
-        break;
     }
   }
 
-  _onSortLinkClick(evt) {
+  onSortLinkClick(evt, data) {
     evt.preventDefault();
     if (evt.target.tagName !== `LABEL`) {
       return;
@@ -209,27 +178,29 @@ export default class TripController {
 
     switch (evt.target.dataset.sortType) {
       case `time`:
-        const sortedByTimeEvents = this._allEvents.slice().sort((a, b) => (b.hoursEnd - b.hoursStart) - (a.hoursEnd - a.hoursStart));
-        sortedByTimeEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
+        const sortedByTimeEvents = data.slice().sort((a, b) => (b.eventEnd - b.eventStart) - (a.eventEnd - a.eventStart));
+        sortedByTimeEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
         break;
       case `price`:
-        const sortedByPriceEvents = this._allEvents.slice().sort((a, b) => b.cost - a.cost);
-        sortedByPriceEvents.forEach((taskMock) => this._renderPoint(taskMock, this._cardList.getElement()));
+        const sortedByPriceEvents = data.slice().sort((a, b) => b.cost - a.cost);
+        sortedByPriceEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
         break;
       case `default`:
-        this._renderDefault();
+        this._cardList.getElement().innerHTML = `<ul class="trip-days">
+        </ul>`;
+        this._days = [];
+        this.init(data);
         break;
     }
   }
 
-  createChart(canvasMoney, canvasTransport, canvasTime) {
-    // throw new Error(`Method not implemented: createChart`);
+  createChart(canvasMoney, canvasTransport, canvasTime, events) {
     const moneyCtx = canvasMoney.getContext(`2d`);
     const transportCtx = canvasTransport.getContext(`2d`);
     const timeCtx = canvasTime.getContext(`2d`);
 
     const getMoneyData = (eventType) => {
-      return this._allEvents.reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
+      return events.reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
     };
     const rideMoneyData = getMoneyData(`Taxi`) + getMoneyData(`bus`) + getMoneyData(`transport`) + getMoneyData(`train`);
     const moneyChart = new Chart(moneyCtx, {
@@ -330,7 +301,7 @@ export default class TripController {
     });
 
     const getTransportData = (eventType) => {
-      return this._allEvents.filter((evt) => evt.eventType === eventType).length;
+      return events.filter((evt) => evt.eventType === eventType).length;
     };
     const rideData = getTransportData(`taxi`) + getTransportData(`bus`) + getTransportData(`transport`) + getTransportData(`train`);
 
@@ -432,19 +403,19 @@ export default class TripController {
     });
 
     const getPlaceTimeSpent = (eventType) => {
-      const hotels = this._allEvents.filter((evt) => evt.eventType === eventType);
+      const hotels = events.filter((evt) => evt.eventType === eventType);
       let placeDurations = [];
       for (const evt of hotels) {
-        placeDurations.push(moment.duration(evt.diffTime).hours());
+        placeDurations.push(moment.duration(evt.eventEnd - evt.eventStart).hours());
       }
       return placeDurations.reduce((sum, current) => sum + current, 0);
     };
 
     const getCityTimeSpent = (city) => {
-      const hotels = this._allEvents.filter((evt) => evt.city === city);
+      const hotels = events.filter((evt) => evt.city === city);
       let cityDurations = [];
       for (const evt of hotels) {
-        cityDurations.push(moment.duration(evt.diffTime).hours());
+        cityDurations.push(moment.duration(evt.eventEnd - evt.eventStart).hours());
       }
       return cityDurations.reduce((sum, current) => sum + current, 0);
     };
@@ -454,7 +425,7 @@ export default class TripController {
       data: {
         labels: [`HOTEL`, `TO AIRPORT`, `TO GENEVA`, `TO CHANOIX`],
         datasets: [{
-          data: [getPlaceTimeSpent(`check`), getPlaceTimeSpent(`flight`),
+          data: [getPlaceTimeSpent(`check-in`), getPlaceTimeSpent(`flight`),
             getCityTimeSpent(`Geneva`), getCityTimeSpent(`Chamonix`)],
           backgroundColor: [
             `rgba(255, 255, 255, 1)`,

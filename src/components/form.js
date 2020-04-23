@@ -1,9 +1,15 @@
 import AbstractComponent from './abstract-component.js';
-import {CITIES, AVAILABLE_EVENT_TYPES} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES} from '../constants.js';
 import {check, uncheck} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
+import API from '../api.js';
+import Destinations from './destinations.js';
+
+const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 export default class Form extends AbstractComponent {
   constructor() {
@@ -51,12 +57,7 @@ export default class Form extends AbstractComponent {
         <label class="event__label  event__type-output" for="event-destination-1">
           Sightseeing at
         </label>
-        <select class="event__input  event__input--destination" id="event-destination-1" name="event-destination">
-        <option value=""></option>
-        ${CITIES.map((city) => (`
-        <option value="${city}">${city}</option>`
-        .trim())).join(``)}
-        </select>
+        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="" list="destination-list-1">
       </div>
 
       <div class="event__field-group  event__field-group--time">
@@ -76,13 +77,18 @@ export default class Form extends AbstractComponent {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
       <button class="event__reset-btn" type="reset">Cancel</button>
     </header>
   </form>`.trim();
+  }
+
+  _addDatalis() {
+    let container = this.getElement().querySelector(`.event__field-group--destination`);
+    api.getDestinations().then((list) => new Destinations(list).render(container));
   }
 
   _applyFlatpickr() {
@@ -138,7 +144,7 @@ export default class Form extends AbstractComponent {
         this._cost = evt.target.value;
       }
     });
-
+    this._addDatalis();
   }
 }
 

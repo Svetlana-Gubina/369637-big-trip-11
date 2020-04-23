@@ -1,5 +1,6 @@
-import {DATE, INIT_DATE, MIN_PRICE, MAX_PRICE, DESC, CITIES, AVAILABLE_EVENT_TYPES, AVAILABLE_OPTIONS} from './constants.js';
+import {DATE, MIN_PRICE, MAX_PRICE, CITIES, AVAILABLE_EVENT_TYPES, AVAILABLE_OPTIONS} from './constants.js';
 import {getRandomOfArray, getRandomInteger, shuffle} from './utils.js';
+import moment from 'moment';
 
 
 export const RouteData = {
@@ -14,19 +15,21 @@ export const RouteData = {
 
 
 export const getEvent = () => ({
+  id: getRandomInteger(MIN_PRICE, MAX_PRICE),
   eventType: getRandomOfArray(AVAILABLE_EVENT_TYPES.slice(0, 7)),
-  eventDate: INIT_DATE,
-  city: getRandomOfArray(CITIES),
-  cost: getRandomInteger(MIN_PRICE, MAX_PRICE),
-  diffTime: getRandomInteger(1800000, 18000000),
-  options: shuffle(Array.from(AVAILABLE_OPTIONS).slice(0, getRandomInteger(1, 5))),
-  photos: new Array(5).fill().map(() => getRandomInteger(1, 30)),
-  description: shuffle(DESC).slice(0, getRandomInteger(1, 3)),
   isFavorite: true,
+  eventStart: Date.now(),
+  eventEnd: moment(Date.now()).add(7, `days`),
+  cost: getRandomInteger(MIN_PRICE, MAX_PRICE),
+  destination: {
+    description: `Chamonix, is a beautiful city, a true asian pearl, with crowded streets.`,
+    name: `Chamonix`,
+    pictures: [
+      {
+        src: `http://picsum.photos/300/200?r=0.0762563005163317`,
+        description: `Chamonix parliament building`
+      }
+    ]
+  },
+  options: shuffle(Array.from(AVAILABLE_OPTIONS).slice(0, getRandomInteger(1, 5))),
 });
-
-
-export const getSampleEvents = () => {
-  const randomEvents = new Array(getRandomInteger(1, 5)).fill().map(() => getEvent());
-  return randomEvents;
-};

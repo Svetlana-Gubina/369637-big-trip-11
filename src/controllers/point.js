@@ -2,6 +2,7 @@ import {render, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
 import {getFormDateTime, filterNullProps, getSelectedOptions} from '../constants.js';
+import Model from '../model.js';
 
 export default class PointController {
   constructor(container, point, onChangeView, onDataChange, list) {
@@ -43,7 +44,8 @@ export default class PointController {
 
     this._pointEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
-        this._onDataChange(null, this._point);
+
+        this._onDataChange(`delete`, this._point);
       });
 
     this._pointEdit.getElement()
@@ -62,7 +64,9 @@ export default class PointController {
         });
 
         const entry = Object.assign({}, this._point, formEntry);
-        this._onDataChange(entry, this._point);
+        const model = Model.parseEvent(entry);
+
+        this._onDataChange(`update`, model);
         document.removeEventListener(`keydown`, onEscKeyDown);
       });
 

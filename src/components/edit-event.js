@@ -1,21 +1,28 @@
 import AbstractComponent from './abstract-component.js';
-import {renderOption} from './option.js';
 import {check, uncheck, getRandomInteger, shuffle} from '../utils.js';
-import {filteredArray, CITIES, AVAILABLE_OPTIONS, AVAILABLE_EVENT_TYPES, DESC} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, DESC} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
+import API from '../api.js';
+import Destinations from './destinations.js';
+import {renderOption} from './option.js';
+import Offers from './offers.js';
+
+const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`
+const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 export default class EditEvent extends AbstractComponent {
-  constructor({eventType, city, cost, options, eventDate, diffTime, photos, description, isFavorite}) {
+  constructor({eventType, city, cost, options, eventStart, eventEnd, photos, description, isFavorite}) {
     super();
     this._eventType = eventType;
     this._city = city;
     this._cost = cost;
     this._options = options;
-    this._eventStart = eventDate;
-    this._diffTime = diffTime;
-    this._eventEnd = eventDate + this._diffTime;
+    this._eventStart = eventStart;
+    this._eventEnd = eventEnd;
+    this._diffTime = this._eventEnd - this._eventStart;
     this._hoursStart = new Date(this._eventStart).getHours();
     this._hoursEnd = new Date(this._eventEnd).getHours();
     this._minutesStart = new Date(this._eventStart).getMinutes();
@@ -67,12 +74,6 @@ export default class EditEvent extends AbstractComponent {
                   ${this._eventType} to
                   </label>
                   <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._city}" list="destination-list-1">
-                  <datalist id="destination-list-1">
-                  <option value="${this._city}">${this._city}</option>
-                  ${filteredArray(CITIES, this._city).map((city) => (`
-                  <option value="${city}">${city}</option>`
-                  .trim())).join(``)}
-                  </datalist>
                 </div>
 
                 <div class="event__field-group  event__field-group--time">
@@ -137,6 +138,11 @@ export default class EditEvent extends AbstractComponent {
         </form>`.trim();
   }
 
+  _addDatalis() {
+    let container = this.getElement().querySelector(`.event__field-group--destination`);
+    api.getDestinations().then((list) => new Destinations(list).render(container));
+  }
+
   _applyFlatpickr() {
     if (this._flatpickr) {
       this._flatpickr.destroy();
@@ -186,10 +192,9 @@ export default class EditEvent extends AbstractComponent {
           prep = ` in `;
         }
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
-
-        let newOptions = shuffle(Array.from(AVAILABLE_OPTIONS).slice(0, getRandomInteger(1, 3)));
-        this.getElement().querySelector(`.event__available-offers`).innerHTML = `${newOptions.map((option) => renderOption(option)).join(``)}`;
-        this._options = newOptions;
+        let offersContainer = this.getElement().querySelector(`.event__available-offers`);
+        offersContainer.innerHTML = ``;
+        api.getOffers().then((list) => new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase()));
       }
     });
 
@@ -215,5 +220,6 @@ export default class EditEvent extends AbstractComponent {
       }
     });
 
+    this._addDatalis();
   }
 }
