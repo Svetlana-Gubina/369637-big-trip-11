@@ -115,3 +115,15 @@ export const filteredArray = (arr, item) => {
   }
   return newArr;
 };
+
+export const FiltersNames = [
+  {
+    name: `Everything`,
+  },
+  {
+    name: `Future`,
+  },
+  {
+    name: `Past`,
+  }
+];

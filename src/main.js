@@ -1,13 +1,14 @@
 import Menu from './components/menu.js';
 import RouteInfoElement from './components/route-info.js';
 import {Position, render, show, hide, check} from './utils.js';
-import {RouteData} from './data.js';
 import FiltersForm from './components/filters-form.js';
-import Filters from './components/filter.js';
+import FiltersComponent from './components/filter.js';
 import TripController from './controllers/event.js';
-import Stats from './components/stats.js';
 import API from './api.js';
 import Sort from './components/sort.js';
+import PointsModel from './models/points.js';
+import {FiltersNames} from './constants.js';
+import Statistics from "./components/statistics.js";
 
 const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`;
@@ -15,41 +16,43 @@ const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 /* === RENDER COMPONENTS ===  */
 
-const tripInfo = document.querySelector(`.trip-main`);
-const routeInfo = new RouteInfoElement(RouteData);
-render(tripInfo, routeInfo.getElement(), Position.AFTERBEGIN);
-const tripControls = document.querySelector(`.trip-controls`);
-const menu = new Menu();
-render(tripControls, menu.getElement(), Position.AFTERBEGIN);
-const filtersForm = new FiltersForm();
-render(tripControls, filtersForm.getElement(), Position.BEFOREEND);
-const smallSort = document.querySelector(`.trip-filters`);
-const filters = new Filters();
-filters.getElement(smallSort);
 const tripEvents = document.querySelector(`.trip-events`);
-const totalField = document.querySelector(`.trip-info__cost-value`);
+const tripInfo = document.querySelector(`.trip-main`);
 
+const pointsModel = new PointsModel();
+const controller = new TripController(tripEvents, pointsModel, api);
 
-const controller = new TripController(tripEvents, totalField);
-api.getData().then((data) => controller.init(data));
-
-/* === SORT BY EVENT - TIME - PRICE === */
-
-const sort = new Sort();
-render(tripEvents, sort.getElement(), Position.AFTERBEGIN);
-sort.getElement().addEventListener(`click`, (evt) => {
-  evt.preventDefault();
-  api.getData().then((data) => controller.onSortLinkClick(evt, data));
+api.getData().then(function (data) {
+  pointsModel.setpoints(data);
+  const routeInfo = new RouteInfoElement({data: pointsModel});
+  routeInfo.render(tripInfo);
+  controller.render(routeInfo);
 });
 
-/* === STATISTICS === */
+const tripControls = document.querySelector(`.trip-controls`);
+const menu = new Menu();
+render(tripControls, menu, Position.AFTERBEGIN);
+const filtersForm = new FiltersForm();
+render(tripControls, filtersForm, Position.BEFOREEND);
 
-const stats = new Stats();
-render(tripEvents, stats.getElement(), Position.BEFOREEND);
-hide(stats.getElement());
-const canvasMoney = stats.getElement().querySelector(`.statistics__chart--money`);
-const canvasTransport = stats.getElement().querySelector(`.statistics__chart--transport`);
-const canvasTime = stats.getElement().querySelector(`.statistics__chart--time`);
+const filters = document.querySelector(`.trip-filters`);
+const filterElements = new FiltersComponent(FiltersNames);
+filterElements.getElement(filters);
+
+// /* === SORT BY EVENT - TIME - PRICE === */
+
+const sortComponent = new Sort();
+render(tripEvents, sortComponent, Position.AFTERBEGIN);
+sortComponent.getElement().addEventListener(`click`, (evt) => {
+  evt.preventDefault();
+  controller.onSortLinkClick(evt);
+});
+
+// /* === STATISTICS === */
+
+const statisticsComponent = new Statistics({events: pointsModel});
+render(tripEvents, statisticsComponent, Position.BEFOREEND);
+statisticsComponent.hide();
 
 const headerCont = document.querySelector(`.page-header__container`);
 headerCont.addEventListener(`click`, (evt) => {
@@ -58,36 +61,37 @@ headerCont.addEventListener(`click`, (evt) => {
     switch (evt.target.textContent) {
       case `Table`:
         controller.show();
-        show(smallSort);
-        hide(stats.getElement());
+        show(filters);
+        sortComponent.show();
+        statisticsComponent.hide();
         break;
       case `Stats`:
         controller.hide();
-        hide(sort.getElement());
-        hide(smallSort);
-        show(stats.getElement());
-        api.getData().then((data) => controller.createChart(canvasMoney, canvasTransport, canvasTime, data));
+        sortComponent.hide();
+        hide(filters);
+        statisticsComponent.show();
         break;
     }
   } else if (evt.target.tagName === `BUTTON`) {
-
     /* === ADD NEW EVENT ===  */
-
+    statisticsComponent.hide();
     controller.show();
-    show(smallSort);
-    api.getData().then((data) => controller.addEvent(data));
+    show(filters);
+    controller.addEvent();
   }
 });
 
-/* === FILTER BY EVERYTHING - FUTURE - PAST === */
+// /* === FILTER BY EVERYTHING - FUTURE - PAST === */
 
-smallSort.addEventListener(`click`, (evt) => {
+filters.addEventListener(`click`, (evt) => {
   evt.preventDefault();
   if (evt.target.tagName !== `LABEL`) {
     return;
   } else {
     const currentFilter = evt.target.textContent;
-    check(smallSort.querySelector(`#filter-${currentFilter.toLowerCase()}`));
-    api.getData().then((data) => controller.filterEvents(currentFilter, data, evt));
+    check(filters
+      .querySelector(`#filter-${currentFilter.toLowerCase()}`));
+    controller.filterEvents(currentFilter, evt);
   }
 });
+

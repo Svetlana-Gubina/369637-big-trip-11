@@ -1,17 +1,6 @@
-import {DATE, MIN_PRICE, MAX_PRICE, CITIES, AVAILABLE_EVENT_TYPES, AVAILABLE_OPTIONS} from './constants.js';
+import {MIN_PRICE, MAX_PRICE, AVAILABLE_EVENT_TYPES, AVAILABLE_OPTIONS} from './constants.js';
 import {getRandomOfArray, getRandomInteger, shuffle} from './utils.js';
 import moment from 'moment';
-
-
-export const RouteData = {
-  departurePlace: getRandomOfArray(CITIES),
-  point: getRandomOfArray(CITIES),
-  destination: getRandomOfArray(CITIES),
-  departureDate: DATE.startDay,
-  departureMonth: DATE.startMonth,
-  returndate: DATE.endDay,
-  returnMonth: DATE.endMonth,
-};
 
 
 export const getEvent = () => ({

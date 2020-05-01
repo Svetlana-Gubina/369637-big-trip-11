@@ -16,6 +16,6 @@ export default class Destinations extends AbstractComponent {
   }
 
   render(container) {
-    render(container, this.getElement(), Position.BEFOREEND);
+    render(container, this, Position.BEFOREEND);
   }
 }

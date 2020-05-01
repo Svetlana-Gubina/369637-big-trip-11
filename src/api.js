@@ -56,7 +56,7 @@ export default class API {
     return this._load({
       url: `point/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data),
+      body: JSON.stringify(data.toRAW()),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)

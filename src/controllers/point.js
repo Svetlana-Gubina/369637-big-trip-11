@@ -70,7 +70,7 @@ export default class PointController {
         document.removeEventListener(`keydown`, onEscKeyDown);
       });
 
-    render(this._container, this._pointView.getElement(), Position.BEFOREEND);
+    render(this._container, this._pointView, Position.BEFOREEND);
   }
 
   setDefaultView() {
