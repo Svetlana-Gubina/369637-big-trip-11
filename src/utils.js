@@ -25,13 +25,13 @@ export const createElement = (template) => {
   return newElement;
 };
 
-export const render = (container, element, place) => {
+export const render = (container, component, place) => {
   switch (place) {
     case Position.AFTERBEGIN:
-      container.prepend(element);
+      container.prepend(component.getElement());
       break;
     case Position.BEFOREEND:
-      container.append(element);
+      container.append(component.getElement());
       break;
   }
 };
@@ -64,3 +64,22 @@ export const getRandomOfArray = (arr) => {
 };
 
 export const getRandomBoolean = () => Boolean(Math.round(Math.random()));
+
+//
+// export const replace = (newComponent, oldComponent) => {
+//   const parentElement = oldComponent.getElement().parentElement;
+//   const newElement = newComponent.getElement();
+//   const oldElement = oldComponent.getElement();
+//
+//   const isExistElements = !!(parentElement && newElement && oldElement);
+//
+//   if (isExistElements && parentElement.contains(oldElement)) {
+//     parentElement.replaceChild(newElement, oldElement);
+//   }
+// };
+//
+//
+// export const remove = (component) => {
+//   component.getElement().remove();
+//   component.removeElement();
+// };
