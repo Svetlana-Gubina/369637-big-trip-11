@@ -1,4 +1,4 @@
-import Model from './model.js';
+import Model from './models//model.js';
 
 const Method = {
   GET: `GET`,
@@ -41,22 +41,22 @@ export default class API {
     .then(toJSON);
   }
 
-  createEvent({event}) {
+  createEvent(event) {
     return this._load({
       url: `points`,
       method: Method.POST,
       body: JSON.stringify(event),
-      headers: new Headers({'Content-Type': `application/json`})
+      headers: new Headers({"Content-Type": `application/json`})
     })
       .then(toJSON)
       .then(Model.parseEvent);
   }
 
-  updateEvent({id, data}) {
+  updateEvent(id, data) {
     return this._load({
-      url: `point/${id}`,
+      url: `points/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data.toRAW()),
+      body: JSON.stringify(data),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then(toJSON)
@@ -64,7 +64,7 @@ export default class API {
   }
 
   deleteEvent({id}) {
-    return this._load({url: `point/${id}`, method: Method.DELETE});
+    return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
 

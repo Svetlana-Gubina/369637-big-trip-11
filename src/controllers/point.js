@@ -1,27 +1,40 @@
-import {render, Position} from '../utils.js';
+import {render, replace, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import {getFormDateTime, filterNullProps, getSelectedOptions} from '../constants.js';
-import Model from '../model.js';
+import {getFormDateTime, getSelectedOptions} from '../constants.js';
+import Model from '../models//model.js';
+
+const SHAKE_ANIMATION_TIMEOUT = 600;
+
+const parseFormData = (formData) => {
+  return new Model({
+    "type": formData.get(`event-type`),
+    "date_from": getFormDateTime(formData.get(`event-start-time`)),
+    "date_to": getFormDateTime(formData.get(`event-end-time`)),
+    "base_price": formData.get(`event-price`),
+    "is_favorite": Boolean(formData.get(`event-favorite`)),
+    "destination": formData.get(`event-destination`),
+    "offers": getSelectedOptions(formData),
+  });
+};
 
 export default class PointController {
-  constructor(container, point, onChangeView, onDataChange, list) {
+  constructor(container, point, onChangeView, onDataChange, list, api) {
     this._list = list;
     this._container = container;
     this._onChangeView = onChangeView;
     this._onDataChange = onDataChange;
     this._point = point;
-    this._eventStart = this._point.eventDate;
-    this._diffTime = this._point.diffTime;
-    this._eventEnd = this._point.eventDate + this._diffTime;
+    this._eventStart = this._point.eventStart;
+    this._eventEnd = this._point.eventEnd;
     this._pointView = new Card(point);
-    this._pointEdit = new EditEvent(point);
+    this._pointEdit = new EditEvent(point, api);
   }
 
   init() {
     const onEscKeyDown = (evt) => {
       if (evt.key === `Escape` || evt.key === `Esc`) {
-        this._container.replaceChild(this._pointView.getElement(), this._pointEdit.getElement());
+        replace(this._pointView, this._pointEdit);
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
     };
@@ -31,46 +44,55 @@ export default class PointController {
        .addEventListener(`click`, (evt) => {
          evt.preventDefault();
          this._onChangeView();
-         this._container.replaceChild(this._pointEdit.getElement(), this._pointView.getElement());
+         replace(this._pointEdit, this._pointView);
          document.addEventListener(`keydown`, onEscKeyDown);
        });
 
     this._pointEdit.getElement()
     .querySelector(`.event__rollup-btn`)
        .addEventListener(`click`, () => {
-         this._container.replaceChild(this._pointView.getElement(), this._pointEdit.getElement());
+         replace(this._pointView, this._pointEdit);
          document.removeEventListener(`keydown`, onEscKeyDown);
        });
 
     this._pointEdit.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, () => {
+        this._pointEdit.setData({
+          deleteButtonLabel: `Deleting...`,
+        });
 
-        this._onDataChange(`delete`, this._point);
+        this._onDataChange(this, `delete`, this._point, null);
       });
 
     this._pointEdit.getElement()
       .addEventListener(`submit`, (evt) => {
         evt.preventDefault();
         const formData = new FormData(this._pointEdit.getElement().querySelector(`.event--edit`));
+        const formEntry = parseFormData(formData);
+        const model = Model.parseEvent(formEntry);
 
-        const formEntry = filterNullProps({
-          eventType: formData.get(`event-type`),
-          eventStart: getFormDateTime(formData.get(`event-start-time`)),
-          eventEnd: getFormDateTime(formData.get(`event-end-time`)),
-          city: formData.get(`event-destination`),
-          cost: Number(formData.get(`event-price`)),
-          options: getSelectedOptions(formData),
-          isFavorite: Boolean(formData.get(`event-favorite`)),
+        this._pointEdit.setData({
+          saveButtonLabel: `Saving...`,
         });
 
-        const entry = Object.assign({}, this._point, formEntry);
-        const model = Model.parseEvent(entry);
-
-        this._onDataChange(`update`, model);
+        this._onDataChange(this, `update`, this._point, model);
         document.removeEventListener(`keydown`, onEscKeyDown);
       });
 
     render(this._container, this._pointView, Position.BEFOREEND);
+  }
+
+  shake() {
+    this._pointEdit.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    this._pointView.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    setTimeout(() => {
+      this._pointEdit.getElement().style.animation = ``;
+      this._pointView.getElement().style.animation = ``;
+      this._pointEdit.setData({
+        saveButtonLabel: `Save`,
+        deleteButtonLabel: `Delete`,
+      });
+    }, SHAKE_ANIMATION_TIMEOUT);
   }
 
   setDefaultView() {

@@ -1,11 +1,3 @@
-export const show = (element) => {
-  element.classList.remove(`visually-hidden`);
-};
-
-export const hide = (element) => {
-  element.classList.add(`visually-hidden`);
-};
-
 export const check = (element) => {
   element.checked = true;
 };
@@ -36,11 +28,11 @@ export const render = (container, component, place) => {
   }
 };
 
-export const unrender = (element) => {
-  if (element) {
-    element.remove();
-  }
+export const remove = (component) => {
+  component.getElement().remove();
+  component.removeElement();
 };
+
 
 export function shuffle(arr) {
   let j;
@@ -65,21 +57,14 @@ export const getRandomOfArray = (arr) => {
 
 export const getRandomBoolean = () => Boolean(Math.round(Math.random()));
 
-//
-// export const replace = (newComponent, oldComponent) => {
-//   const parentElement = oldComponent.getElement().parentElement;
-//   const newElement = newComponent.getElement();
-//   const oldElement = oldComponent.getElement();
-//
-//   const isExistElements = !!(parentElement && newElement && oldElement);
-//
-//   if (isExistElements && parentElement.contains(oldElement)) {
-//     parentElement.replaceChild(newElement, oldElement);
-//   }
-// };
-//
-//
-// export const remove = (component) => {
-//   component.getElement().remove();
-//   component.removeElement();
-// };
+export const replace = (newComponent, oldComponent) => {
+  const parentElement = oldComponent.getElement().parentElement;
+  const newElement = newComponent.getElement();
+  const oldElement = oldComponent.getElement();
+
+  const isExistElements = !!(parentElement && newElement && oldElement);
+  if (isExistElements && parentElement.contains(oldElement)) {
+    parentElement.replaceChild(newElement, oldElement);
+  }
+};
+

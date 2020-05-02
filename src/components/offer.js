@@ -1,10 +1,13 @@
 import AbstractComponent from './abstract-component.js';
 import {getRandomInteger} from '../utils.js';
 
+const MIN_ID = 100;
+const MAX_ID = 1000;
+
 export default class Offer extends AbstractComponent {
   constructor({title, price, isAdded = false}) {
     super();
-    this._id = getRandomInteger(100, 500);
+    this._id = getRandomInteger(MIN_ID, MAX_ID);
     this._title = title;
     this._price = price;
     this._isAdded = isAdded;

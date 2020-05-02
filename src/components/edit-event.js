@@ -1,21 +1,17 @@
-import AbstractComponent from './abstract-component.js';
+import AbstractSmartComponent from './abstract-smart-component.js';
 import {check, uncheck, getRandomInteger, shuffle} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, DESC} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, DESC, DefaultLabels} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
-import API from '../api.js';
 import Destinations from './destinations.js';
 import {renderOption} from './option.js';
 import Offers from './offers.js';
 
-const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
-const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`
-const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
-
-export default class EditEvent extends AbstractComponent {
-  constructor({eventType, city, cost, options, eventStart, eventEnd, photos, description, isFavorite}) {
+export default class EditEvent extends AbstractSmartComponent {
+  constructor({eventType, city, cost, options, eventStart, eventEnd, photos, description, isFavorite}, api) {
     super();
+    this._api = api;
     this._eventType = eventType;
     this._city = city;
     this._cost = cost;
@@ -30,6 +26,7 @@ export default class EditEvent extends AbstractComponent {
     this._photos = photos;
     this._description = description;
     this._isFavorite = isFavorite;
+    this._buttonLabels = DefaultLabels;
     this._subscribeOnEvents();
 
     this._flatpickr = null;
@@ -73,7 +70,7 @@ export default class EditEvent extends AbstractComponent {
                   <label class="event__label  event__type-output" for="event-destination-1">
                   ${this._eventType} to
                   </label>
-                  <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._city}" list="destination-list-1">
+                  <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._city}"" list="destination-list-1">
                 </div>
 
                 <div class="event__field-group  event__field-group--time">
@@ -96,8 +93,8 @@ export default class EditEvent extends AbstractComponent {
                   <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${this._cost}">
                 </div>
 
-                <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                <button class="event__reset-btn" type="reset">Delete</button>
+                <button class="event__save-btn  btn  btn--blue" type="submit">${this._buttonLabels.saveButtonLabel}</button>
+                <button class="event__reset-btn" type="reset">${this._buttonLabels.deleteButtonLabel}</button>
 
                 <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${this._isFavorite ? `checked` : ``}>
                 <label class="event__favorite-btn" for="event-favorite-1">
@@ -140,7 +137,7 @@ export default class EditEvent extends AbstractComponent {
 
   _addDatalis() {
     let container = this.getElement().querySelector(`.event__field-group--destination`);
-    api.getDestinations().then((list) => new Destinations(list).render(container));
+    this._api.getDestinations().then((list) => new Destinations(list).render(container));
   }
 
   _applyFlatpickr() {
@@ -166,7 +163,23 @@ export default class EditEvent extends AbstractComponent {
     });
   }
 
+  recoveryListeners() {
+    this._subscribeOnEvents();
+  }
+
+  rerender() {
+    super.rerender();
+    this._applyFlatpickr();
+  }
+
+  setData(data) {
+    this._buttonLabels = Object.assign({}, DefaultLabels, data);
+    this.rerender();
+  }
+
   _subscribeOnEvents() {
+    this._addDatalis();
+
     this.getElement()
     .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
@@ -194,7 +207,7 @@ export default class EditEvent extends AbstractComponent {
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
-        api.getOffers().then((list) => new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase()));
+        this._api.getOffers().then((list) => new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase()));
       }
     });
 
@@ -219,7 +232,5 @@ export default class EditEvent extends AbstractComponent {
         this._cost = evt.target.value;
       }
     });
-
-    this._addDatalis();
   }
 }
