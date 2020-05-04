@@ -4,7 +4,7 @@ export default class PointsModel {
     this._dataChangeHandlers = [];
   }
 
-  removeTask(id) {
+  removeEvent(id) {
     const index = this._points.findIndex((it) => it.id === id);
     if (index === -1) {
       return false;
@@ -23,7 +23,7 @@ export default class PointsModel {
     this._callHandlers(this._dataChangeHandlers);
   }
 
-  updateTask(id, event) {
+  updateEvent(id, event) {
     const index = this._points.findIndex((it) => it.id === id);
     if (index === -1) {
       return false;
@@ -33,7 +33,7 @@ export default class PointsModel {
     return true;
   }
 
-  addTask(event) {
+  addEvent(event) {
     this._points = [].concat(event, this._tasks);
     this._callHandlers(this._dataChangeHandlers);
   }

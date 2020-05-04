@@ -25,13 +25,13 @@ export default class Model {
     return {
       'id': this.id,
       'is_favorite': this.isFavorite,
-      'type': this._eventType,
-      'date_from': this._eventStart,
-      'date_to': this._eventEnd,
-      'base_price': this._cost,
-      'destination': this._destination,
-      'offers': this._options,
-      'pictures': this._photos,
+      'type': this.eventType,
+      'date_from': this.eventStart,
+      'date_to': this.eventEnd,
+      'base_price': this.cost,
+      'destination': this.destination,
+      'offers': this.options,
+      'pictures': this.photos,
     };
   }
 }

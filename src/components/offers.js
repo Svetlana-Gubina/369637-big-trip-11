@@ -12,7 +12,7 @@ export default class Offers extends AbstractComponent {
     const item = this._list.find((element) => element.type === type);
     for (let offer of item.offers) {
       const option = new Offer(offer);
-      render(container, option.getElement(), Position.BEFOREEND);
+      render(container, option, Position.BEFOREEND);
     }
   }
 }

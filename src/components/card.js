@@ -6,11 +6,11 @@ export default class Card extends AbstractComponent {
     super();
     this._id = id;
     this._eventType = eventType;
-    this._eventStart = eventStart;
-    this._eventEnd = eventEnd;
-    this._duration = moment.duration(this._eventEnd - this._eventStart);
-    this._durationHrs = this._duration.hours();
-    this._durationMins = this._duration.minutes();
+    this._eventStart = new Date(eventStart).getTime();
+    this._eventEnd = new Date(eventEnd).getTime();
+    this._duration = this._eventEnd - this._eventStart;
+    this._durationHrs = moment(this._duration).hours();
+    this._durationMins = moment(this._duration).minutes();
     this._city = city;
     this._cost = cost;
     this._options = options;
@@ -51,5 +51,4 @@ export default class Card extends AbstractComponent {
           </button>
         </div>`.trim();
   }
-
 }

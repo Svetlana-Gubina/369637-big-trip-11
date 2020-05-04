@@ -1,19 +1,17 @@
-import AbstractComponent from './abstract-component.js';
+import AbstractSmartComponent from './abstract-smart-component.js';
 import {AVAILABLE_EVENT_TYPES} from '../constants.js';
-import {check, uncheck} from '../utils.js';
+import {check, uncheck, remove} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
-import API from '../api.js';
 import Destinations from './destinations.js';
 
-const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
-const END_POINT = `https://htmlacademy-es-9.appspot.com/big-trip/`
-const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export default class Form extends AbstractComponent {
-  constructor() {
+export default class Form extends AbstractSmartComponent {
+  constructor(api) {
     super();
+    this._api = api;
     this._eventStart = Date.now();
     this._subscribeOnEvents();
     this._flatpickr = null;
@@ -86,9 +84,23 @@ export default class Form extends AbstractComponent {
   </form>`.trim();
   }
 
+  getData() {
+    const formData = new FormData(this.getElement().querySelector(`.event--edit`));
+    return formData;
+  }
+
+  removeElement() {
+    if (this._flatpickr) {
+      this._flatpickr.destroy();
+      this._flatpickr = null;
+    }
+
+    super.removeElement();
+  }
+
   _addDatalis() {
     let container = this.getElement().querySelector(`.event__field-group--destination`);
-    api.getDestinations().then((list) => new Destinations(list).render(container));
+    this._api.getDestinations().then((list) => new Destinations(list).render(container));
   }
 
   _applyFlatpickr() {
@@ -115,6 +127,11 @@ export default class Form extends AbstractComponent {
   }
 
   _subscribeOnEvents() {
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, (evt) => {
+      evt.preventDefault();
+      remove(this);
+    });
+
     this.getElement()
     .querySelector(`.event__type-list`).addEventListener(`click`, (evt) => {
       evt.preventDefault();
@@ -145,6 +162,13 @@ export default class Form extends AbstractComponent {
       }
     });
     this._addDatalis();
+  }
+
+  shake() {
+    this.getElement().querySelector(`.event`).style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    setTimeout(() => {
+      this.getElement().style.animation = ``;
+    }, SHAKE_ANIMATION_TIMEOUT);
   }
 }
 
