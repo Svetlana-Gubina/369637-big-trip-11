@@ -1,5 +1,22 @@
 import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
+import {MILLISECONDS} from '../constants.js';
+
+const getDays = (duration) => {
+  if (duration > MILLISECONDS) {
+    return moment(duration).days() < 10 ? `0` + moment(duration).days() + `D` : moment(duration).days() + `D`;
+  }
+  return ``;
+};
+
+const createOptionsMarkup = (options) => {
+  return options.map((option) => (`
+  <li class="event__offer">
+    <span class="event__offer-title">${option.title}</span>
+    &plus;
+    &euro;&nbsp;<span class="event__offer-price">${option.price}</span>
+  </li>`.trim())).join(``);
+};
 
 export default class Card extends AbstractComponent {
   constructor({id, eventType, eventStart, eventEnd, city, cost, options}) {
@@ -9,11 +26,13 @@ export default class Card extends AbstractComponent {
     this._eventStart = new Date(eventStart).getTime();
     this._eventEnd = new Date(eventEnd).getTime();
     this._duration = this._eventEnd - this._eventStart;
-    this._durationHrs = moment(this._duration).hours();
-    this._durationMins = moment(this._duration).minutes();
+    this._durationDays = getDays(this._duration);
+    this._durationHrs = moment(this._duration).hours() < 10 ? `0` + moment(this._duration).hours() : moment(this._duration).hours();
+    this._durationMins = moment(this._duration).minutes() < 10 ? `0` + moment(this._duration).minutes() : moment(this._duration).minutes();
     this._city = city;
     this._cost = cost;
-    this._options = options;
+    this._options = options.slice(0, 3);
+    this._optionsMarkup = createOptionsMarkup(this._options);
   }
 
   getTemplate() {
@@ -29,7 +48,7 @@ export default class Card extends AbstractComponent {
           &mdash;
           <time class="event__end-time" datetime="2019-03-18T11:00">${moment(this._eventEnd).format(`hh : mm`)}</time>
           </p>
-          <p class="event__duration">${this._durationHrs}H ${this._durationMins}M</p>
+          <p class="event__duration">${this._durationDays} ${this._durationHrs}H ${this._durationMins}M</p>
           </div>
 
           <p class="event__price">
@@ -38,12 +57,7 @@ export default class Card extends AbstractComponent {
 
           <h4 class="visually-hidden">Offers:</h4>
           <ul class="event__selected-offers">
-          ${this._options.map((option) => (`
-            <li class="event__offer">
-              <span class="event__offer-title">${option.title}</span>
-              &plus;
-              &euro;&nbsp;<span class="event__offer-price">${option.price}</span>
-            </li>`.trim())).join(``)}
+          ${this._optionsMarkup}
           </ul>
 
           <button class="event__rollup-btn" type="button">

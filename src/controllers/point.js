@@ -1,16 +1,16 @@
 import {render, replace, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import {getFormDateTime, getSelectedOptions} from '../constants.js';
+import {getSelectedOptions} from '../constants.js';
 import Model from '../models//model.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-const parseFormData = (formData) => {
+export const parseFormData = (formData) => {
   return new Model({
     "type": formData.get(`event-type`),
-    "date_from": getFormDateTime(formData.get(`event-start-time`)),
-    "date_to": getFormDateTime(formData.get(`event-end-time`)),
+    "date_from": formData.get(`event-start-time`),
+    "date_to": formData.get(`event-end-time`),
     "base_price": formData.get(`event-price`),
     "is_favorite": Boolean(formData.get(`event-favorite`)),
     "destination": formData.get(`event-destination`),

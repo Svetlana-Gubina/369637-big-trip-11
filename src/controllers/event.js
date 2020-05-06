@@ -1,23 +1,25 @@
 import {render, remove, Position} from '../utils.js';
 import {getEvent} from '../data.js';
-import {filterNullProps, getFormDateTime} from '../constants.js';
+import {filterNullProps} from '../constants.js';
 import Day from '../components/day.js';
 import Form from '../components/form.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
-import PointController from './point.js';
+import PointController, {parseFormData} from './point.js';
 import moment from 'moment';
 import Model from '../models//model.js';
 
+
 export default class TripController {
-  constructor(container, pointsModel, api) {
+  constructor(container, pointsModel, addNewEventElement, api) {
     this._container = container;
     this._pointsModel = pointsModel;
     this._api = api;
-    this._form = new Form(api);
+    this._form = new Form(addNewEventElement, api);
     this._cardList = new CardList();
     this._sortComponent = new Sort();
     this._totalField = null;
+    this._addNewEventElement = addNewEventElement;
     this._days = [];
     this._onChangeView = this._onChangeView.bind(this);
     this._onDataChange = this._onDataChange.bind(this);
@@ -125,8 +127,8 @@ export default class TripController {
   _onDataChange(pointController, actionType, oldData, newData) {
     switch (actionType) {
       case `update`:
-        this._api.updateEvent(oldData.id, newData.toRAW()
-        ).then((event) => {
+        this._api.updateEvent(oldData.id, newData)
+        .then((event) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, event);
           if (isSuccess) {
             this.rerender();
@@ -153,31 +155,29 @@ export default class TripController {
 
 
   addEvent() {
+    this.rerender();
     render(this._container, this._form, Position.AFTERBEGIN);
+    this._onChangeView();
+    this._addNewEventElement.disabled = true;
 
     this._form.getElement().addEventListener(`submit`, (evt) => {
       evt.preventDefault();
       const formData = this._form.getData();
-      const defaultEvent = getEvent();
+      const formEntry = parseFormData(formData);
+      // const defaultEvent = Model.parseEvent(getEvent());
+      // const newEvent = Object.assign({}, defaultEvent, formEntry);
 
-      const formEntry = filterNullProps({
-        eventType: formData.get(`event-type`),
-        eventStart: getFormDateTime(formData.get(`event-start-time`)),
-        eventEnd: getFormDateTime(formData.get(`event-end-time`)),
-        city: formData.get(`event-destination`),
-        cost: Number(formData.get(`event-price`)),
-      });
-      const newEvent = Object.assign({}, defaultEvent, formEntry);
-      const model = Model.parseEvent(newEvent);
-
-      this._api.createEvent(model.toRAW())
+      this._api.createEvent(formEntry)
       .then((pointModel) => {
         this._pointsModel.addEvent(pointModel);
         this.rerender();
         this.renderTotalCount();
         remove(this._form);
+        this._addNewEventElement.disabled = false;
       }).catch(() => {
         this._form.shake();
+        // remove(this._form);
+        // this._addNewEventElement.disabled = false;
       });
     });
   }

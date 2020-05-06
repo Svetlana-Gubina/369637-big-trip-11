@@ -1,18 +1,28 @@
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {AVAILABLE_EVENT_TYPES} from '../constants.js';
-import {check, uncheck, remove} from '../utils.js';
+import {AVAILABLE_EVENT_TYPES, MILLISECONDS} from '../constants.js';
+import {check, uncheck} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import Destinations from './destinations.js';
+import {renderOption} from './option.js';
+import Offers from './offers.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class Form extends AbstractSmartComponent {
-  constructor(api) {
+  constructor(addNewEventElement, api) {
     super();
     this._api = api;
+    this._addNewEventElement = addNewEventElement;
     this._eventStart = Date.now();
+    this._hoursStart = new Date(this._eventStart).getHours();
+    this._eventEnd = new Date(this._eventStart + MILLISECONDS * 7);
+    this._hoursEnd = new Date(this._eventEnd).getHours();
+    this._minutesStart = new Date(this._eventStart).getMinutes();
+    this._minutesEnd = new Date(this._eventEnd).getMinutes();
+    this._cost = null;
+    this._options = null;
     this._subscribeOnEvents();
     this._flatpickr = null;
     this._applyFlatpickr();
@@ -62,12 +72,12 @@ export default class Form extends AbstractSmartComponent {
         <label class="visually-hidden" for="event-start-time-1">
           From
         </label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="18/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${new Date(this._eventStart).toLocaleDateString()} ${this._hoursStart}:${this._minutesStart}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">
           To
         </label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="18/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${new Date(this._eventEnd).toLocaleDateString()} ${this._hoursEnd}:${this._minutesEnd}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -75,12 +85,21 @@ export default class Form extends AbstractSmartComponent {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="">
+        <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${Math.trunc(this._cost)}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
       <button class="event__reset-btn" type="reset">Cancel</button>
     </header>
+
+    <section class="event__details visually-hidden">
+        <section class="event__section  event__section--offers">
+          <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+          <div class="event__available-offers">
+
+          </div>
+        </section>
+    </section>
   </form>`.trim();
   }
 
@@ -96,6 +115,13 @@ export default class Form extends AbstractSmartComponent {
     }
 
     super.removeElement();
+  }
+
+  remove() {
+    this.getElement().remove();
+    this.removeElement();
+    this._addNewEventElement.disabled = false;
+    document.removeEventListener(`keydown`, this.onEscKeyDown);
   }
 
   _addDatalis() {
@@ -114,14 +140,15 @@ export default class Form extends AbstractSmartComponent {
 
     this._flatpickr = flatpickr(start, {
       enableTime: true,
+      minDate: this._eventStart,
       dateFormat: `d.m.Y H:m`,
       maxDate: `01.01.2022 00:00`
     });
 
     this._flatpickr = flatpickr(end, {
       enableTime: true,
+      minDate: this._eventStart,
       dateFormat: `d.m.Y H:m`,
-      minDate: new Date(this._eventStart),
       maxDate: `01.01.2022 00:00`,
     });
   }
@@ -129,7 +156,7 @@ export default class Form extends AbstractSmartComponent {
   _subscribeOnEvents() {
     this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, (evt) => {
       evt.preventDefault();
-      remove(this);
+      this.remove();
     });
 
     this.getElement()
@@ -147,6 +174,10 @@ export default class Form extends AbstractSmartComponent {
           prep = ` in `;
         }
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
+        this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
+        const offersContainer = this.getElement().querySelector(`.event__available-offers`);
+        offersContainer.innerHTML = ``;
+        this._api.getOffers().then((list) => new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase()));
       }
     });
 

@@ -7,16 +7,16 @@ const midIndex = function (arr) {
 };
 
 export default class RouteInfoElement extends AbstractComponent {
-  constructor({data}) {
+  constructor({points}) {
     super();
-    this._data = data.getpointsAll();
-    this._departurePlace = this._data[0].destination.name;
-    this._point = this._data[midIndex(this._data)].destination.name;
-    this._destination = this._data[this._data.length - 1].destination.name;
-    this._departureDate = moment(this._data[0].eventStart).date();
-    this._returndate = moment(this._data[this._data.length - 1].eventEnd).date();
-    this._departureMonth = moment(this._data[0].eventStart).format(`MMM`);
-    this._returnMonth = moment(this._data[this._data.length - 1].eventEnd).format(`MMM`);
+    this._points = points.getpointsAll();
+    this._departurePlace = this._points[0].destination.name;
+    this._point = this._points[midIndex(this._points)].destination.name;
+    this._destination = this._points[this._points.length - 1].destination.name;
+    this._departureDate = moment(this._points[0].eventStart).date();
+    this._returndate = moment(this._points[this._points.length - 1].eventEnd).date();
+    this._departureMonth = moment(this._points[0].eventStart).format(`MMM`);
+    this._returnMonth = moment(this._points[this._points.length - 1].eventEnd).format(`MMM`);
   }
 
   getTemplate() {
