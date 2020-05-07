@@ -1,19 +1,19 @@
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {AVAILABLE_EVENT_TYPES, MILLISECONDS} from '../constants.js';
-import {check, uncheck} from '../utils.js';
+import {AVAILABLE_EVENT_TYPES, MILLISECONDS, CITIES, DefaultLabels} from '../constants.js';
+import {getRandomOfArray} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import Destinations from './destinations.js';
-import {renderOption} from './option.js';
 import Offers from './offers.js';
+import {check, uncheck} from '../utils.js';
 
-const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class Form extends AbstractSmartComponent {
   constructor(addNewEventElement, api) {
     super();
     this._api = api;
+    this._city = getRandomOfArray(CITIES);
     this._addNewEventElement = addNewEventElement;
     this._eventStart = Date.now();
     this._hoursStart = new Date(this._eventStart).getHours();
@@ -23,9 +23,13 @@ export default class Form extends AbstractSmartComponent {
     this._minutesEnd = new Date(this._eventEnd).getMinutes();
     this._cost = null;
     this._options = null;
-    this._subscribeOnEvents();
     this._flatpickr = null;
+    this._buttonLabels = DefaultLabels;
     this._applyFlatpickr();
+    this._addDatalis();
+    this._subscribeOnEvents();
+    this._submitHandler = null;
+    this._cancelButtonClickHandler = null;
   }
 
   getTemplate() {
@@ -65,7 +69,7 @@ export default class Form extends AbstractSmartComponent {
         <label class="event__label  event__type-output" for="event-destination-1">
           Sightseeing at
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="" list="destination-list-1">
+
       </div>
 
       <div class="event__field-group  event__field-group--time">
@@ -88,7 +92,7 @@ export default class Form extends AbstractSmartComponent {
         <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${Math.trunc(this._cost)}">
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit">${this._buttonLabels.saveButtonLabel}</button>
       <button class="event__reset-btn" type="reset">Cancel</button>
     </header>
 
@@ -124,9 +128,36 @@ export default class Form extends AbstractSmartComponent {
     document.removeEventListener(`keydown`, this.onEscKeyDown);
   }
 
+  rerender() {
+    super.rerender();
+    this._applyFlatpickr();
+    this._addDatalis();
+  }
+
+  setCancelButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__reset-btn`)
+      .addEventListener(`click`, handler);
+
+    this._cancelButtonClickHandler = handler;
+  }
+
+  setSubmitHandler(handler) {
+    this.getElement().addEventListener(`submit`, handler);
+    this._submitHandler = handler;
+  }
+
+  recoveryListeners() {
+    this._subscribeOnEvents();
+  }
+
   _addDatalis() {
     let container = this.getElement().querySelector(`.event__field-group--destination`);
-    this._api.getDestinations().then((list) => new Destinations(list).render(container));
+    this._api.getDestinations().then((list) => new Destinations(list, this._city).render(container));
+  }
+
+  setData(labels) {
+    this._buttonLabels = Object.assign({}, DefaultLabels, labels);
+    this.rerender();
   }
 
   _applyFlatpickr() {
@@ -142,7 +173,10 @@ export default class Form extends AbstractSmartComponent {
       enableTime: true,
       minDate: this._eventStart,
       dateFormat: `d.m.Y H:m`,
-      maxDate: `01.01.2022 00:00`
+      maxDate: `01.01.2022 00:00`,
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._eventStart || `today`,
     });
 
     this._flatpickr = flatpickr(end, {
@@ -150,22 +184,20 @@ export default class Form extends AbstractSmartComponent {
       minDate: this._eventStart,
       dateFormat: `d.m.Y H:m`,
       maxDate: `01.01.2022 00:00`,
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._eventEnd || `today`,
     });
   }
 
   _subscribeOnEvents() {
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, (evt) => {
-      evt.preventDefault();
-      this.remove();
-    });
-
     this.getElement()
     .querySelector(`.event__type-list`).addEventListener(`click`, (evt) => {
       evt.preventDefault();
       if (evt.target.tagName === `LABEL`) {
-        check(this.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
-        uncheck(this.getElement().querySelector(`.event__type-toggle`));
-        this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
+        check(this._form.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
+        uncheck(this._form.getElement().querySelector(`.event__type-toggle`));
+        this._form.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
         let type = AVAILABLE_EVENT_TYPES.find((it) => it === evt.target.textContent);
         let prep;
         if (AVAILABLE_EVENT_TYPES.slice(0, 6).includes(type)) {
@@ -173,33 +205,32 @@ export default class Form extends AbstractSmartComponent {
         } else {
           prep = ` in `;
         }
-        this.getElement().querySelector(`.event__label`).textContent = type + prep;
-        this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
-        const offersContainer = this.getElement().querySelector(`.event__available-offers`);
-        offersContainer.innerHTML = ``;
-        this._api.getOffers().then((list) => new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase()));
+        this._form.getElement().querySelector(`.event__label`).textContent = type + prep;
+
+        this._api.getOffers().then((list) => this.renderOptions(evt, list));
       }
     });
 
     this.getElement()
-    .querySelector(`.event__input--destination`).addEventListener(`change`, (evt) => {
+    .querySelector(`.event__field-group--destination`).addEventListener(`change`, (evt) => {
+      evt.preventDefault();
       this._city = evt.target.value;
+      // this.rerender();
     });
 
-    this.getElement()
-    .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
-      if (evt.key === `Enter`) {
-        this._cost = evt.target.value;
-      }
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
+      evt.preventDefault();
+      this._form.getElement().querySelector(`#event-price-1`).value = evt.target.value;
     });
-    this._addDatalis();
   }
 
-  shake() {
-    this.getElement().querySelector(`.event`).style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
-    setTimeout(() => {
-      this.getElement().style.animation = ``;
-    }, SHAKE_ANIMATION_TIMEOUT);
+  renderOptions(evt, list) {
+    if (list.length > 0) {
+      this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
+      const offersContainer = this.getElement().querySelector(`.event__available-offers`);
+      offersContainer.innerHTML = ``;
+      new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase());
+    }
   }
 }
 

@@ -1,6 +1,6 @@
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {check, uncheck, getRandomInteger, shuffle} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, DESC, DefaultLabels} from '../constants.js';
+import {check, uncheck} from '../utils.js';
+import {AVAILABLE_EVENT_TYPES, DefaultLabels} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -31,6 +31,9 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this._flatpickr = null;
     this._applyFlatpickr();
+    this._addDatalis();
+    this._submitHandler = null;
+    this._deleteButtonClickHandler = null;
   }
 
   getTemplate() {
@@ -41,7 +44,7 @@ export default class EditEvent extends AbstractSmartComponent {
                 <span class="visually-hidden">Choose event type</span>
                 <img class="event__type-icon" width="17" height="17" src="img/icons/${this._eventType.toLowerCase()}.png"  alt="Event type icon">
                 </label>
-                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" name="event-type">
 
                   <div class="event__type-list">
                     <fieldset class="event__type-group">
@@ -70,7 +73,7 @@ export default class EditEvent extends AbstractSmartComponent {
                   <label class="event__label  event__type-output" for="event-destination-1">
                   ${this._eventType} to
                   </label>
-                  <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${this._city}"" list="destination-list-1">
+
                 </div>
 
                 <div class="event__field-group  event__field-group--time">
@@ -135,9 +138,14 @@ export default class EditEvent extends AbstractSmartComponent {
         </form>`.trim();
   }
 
+  getData() {
+    const form = this.getElement().querySelector(`.event--edit`);
+    return new FormData(form);
+  }
+
   _addDatalis() {
     let container = this.getElement().querySelector(`.event__field-group--destination`);
-    this._api.getDestinations().then((list) => new Destinations(list).render(container));
+    this._api.getDestinations().then((list) => new Destinations(list, this._city).render(container));
   }
 
   _applyFlatpickr() {
@@ -151,8 +159,11 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this._flatpickr = flatpickr(start, {
       enableTime: true,
-      dateFormat: `d.m.Y H:m`,
-      maxDate: `01.01.2022 00:00`
+      dateFormat: `d/m/Y H:m`,
+      maxDate: `01.01.2022 00:00`,
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._eventStart || `today`,
     });
 
     this._flatpickr = flatpickr(end, {
@@ -160,7 +171,23 @@ export default class EditEvent extends AbstractSmartComponent {
       dateFormat: `d.m.Y H:m`,
       minDate: new Date(this._eventStart),
       maxDate: `01.01.2022 00:00`,
+      altInput: true,
+      allowInput: true,
+      defaultDate: this._eventEnd || `today`,
     });
+  }
+
+  setDeleteButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__reset-btn`)
+      .addEventListener(`click`, handler);
+
+    this._deleteButtonClickHandler = handler;
+  }
+
+  setSubmitHandler(handler) {
+    this.getElement().addEventListener(`submit`, handler);
+    this._options.map((option) => console.log({option}));
+    this._submitHandler = handler;
   }
 
   recoveryListeners() {
@@ -172,22 +199,17 @@ export default class EditEvent extends AbstractSmartComponent {
     this._applyFlatpickr();
   }
 
-  setData(data) {
-    this._buttonLabels = Object.assign({}, DefaultLabels, data);
+  setData(labels) {
+    this._buttonLabels = Object.assign({}, DefaultLabels, labels);
     this.rerender();
   }
 
   _subscribeOnEvents() {
-    this._addDatalis();
-
     this.getElement()
     .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
-      if (this._isFavorite) {
-        this._isFavorite = false;
-      } else {
-        this._isFavorite = true;
-      }
+      this._isFavorite = !this._isFavorite;
+      this.rerender();
     });
 
     this.getElement()
@@ -212,25 +234,24 @@ export default class EditEvent extends AbstractSmartComponent {
     });
 
     this.getElement()
-    .querySelector(`.event__input--destination`).addEventListener(`change`, (evt) => {
-      let newDesc = shuffle(DESC).slice(0, getRandomInteger(1, 3));
-      this.getElement().querySelector(`.event__destination-description`).textContent = newDesc;
-
-      let newPhotos = new Array(5).fill().map(() => getRandomInteger(1, 30));
-      this.getElement().querySelector(`.event__photos-tape`).innerHTML = `${newPhotos.map((photo) => (`
-      <img class="event__photo" src="http://picsum.photos/300/150?r=${photo}" alt="Event photo">`
-      .trim())).join(``)}`;
-
-      this._photos = newPhotos;
-      this._description = newDesc;
+    .querySelector(`.event__field-group--destination`).addEventListener(`change`, (evt) => {
+      evt.preventDefault();
       this._city = evt.target.value;
+
+      const photos = this.getElement().querySelector(`.event__photos-tape`);
+      const destinationDescription = this.getElement().querySelector(`.event__destination-description`);
+      this._api.getDestinations().then((list) => new Destinations(list, this._city).getInfo(evt.target.value))
+      .then(function (point) {
+        destinationDescription.textContent = point.description;
+        photos.innerHTML = `${point.pictures.map((picture) => (`
+        <img class="event__photo" src="${picture.src}" alt="Event photo">`
+        .trim())).join(``)}`;
+      });
     });
 
     this.getElement()
     .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
-      if (evt.key === `Enter`) {
-        this._cost = evt.target.value;
-      }
+      this._cost = evt.target.value;
     });
   }
 }

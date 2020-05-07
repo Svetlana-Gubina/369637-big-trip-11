@@ -2,12 +2,12 @@ import {render, remove, Position} from '../utils.js';
 import {getEvent} from '../data.js';
 import {filterNullProps} from '../constants.js';
 import Day from '../components/day.js';
-import Form from '../components/form.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import PointController, {parseFormData} from './point.js';
 import moment from 'moment';
 import Model from '../models//model.js';
+import FormController from './form.js';
 
 
 export default class TripController {
@@ -15,7 +15,6 @@ export default class TripController {
     this._container = container;
     this._pointsModel = pointsModel;
     this._api = api;
-    this._form = new Form(addNewEventElement, api);
     this._cardList = new CardList();
     this._sortComponent = new Sort();
     this._totalField = null;
@@ -124,8 +123,12 @@ export default class TripController {
     this._subscriptions.forEach((it) => it());
   }
 
-  _onDataChange(pointController, actionType, oldData, newData) {
+  _onDataChange(controller, actionType, oldData, newData) {
     switch (actionType) {
+      case `create`:
+        console.log(`oops!`);
+        controller.destroy();
+        break;
       case `update`:
         this._api.updateEvent(oldData.id, newData)
         .then((event) => {
@@ -136,7 +139,7 @@ export default class TripController {
           }
         })
         .catch(() => {
-          pointController.shake();
+          controller.shake();
         });
         break;
       case `delete`:
@@ -147,7 +150,7 @@ export default class TripController {
           this.rerender();
           this.renderTotalCount();
         }).catch(() => {
-          pointController.shake();
+          controller.shake();
         });
         break;
     }
@@ -156,30 +159,29 @@ export default class TripController {
 
   addEvent() {
     this.rerender();
-    render(this._container, this._form, Position.AFTERBEGIN);
+    const formController = new FormController(this._container, this._addNewEventElement, this._api, this._onDataChange);
+    formController.render();
     this._onChangeView();
-    this._addNewEventElement.disabled = true;
 
-    this._form.getElement().addEventListener(`submit`, (evt) => {
-      evt.preventDefault();
-      const formData = this._form.getData();
-      const formEntry = parseFormData(formData);
-      // const defaultEvent = Model.parseEvent(getEvent());
-      // const newEvent = Object.assign({}, defaultEvent, formEntry);
-
-      this._api.createEvent(formEntry)
-      .then((pointModel) => {
-        this._pointsModel.addEvent(pointModel);
-        this.rerender();
-        this.renderTotalCount();
-        remove(this._form);
-        this._addNewEventElement.disabled = false;
-      }).catch(() => {
-        this._form.shake();
-        // remove(this._form);
-        // this._addNewEventElement.disabled = false;
-      });
-    });
+    // this._form.getElement().addEventListener(`submit`, (evt) => {
+    //   evt.preventDefault();
+    //   const formData = this._form.getData();
+    //   const formEntry = parseFormData(formData);
+    //   // const defaultEvent = Model.parseEvent(getEvent());
+    //   // const newEvent = Object.assign({}, defaultEvent, formEntry);
+    //   this._api.createEvent(formEntry)
+    //   .then((pointModel) => {
+    //     this._pointsModel.addEvent(pointModel);
+    //     this.rerender();
+    //     this.renderTotalCount();
+    //     remove(this._form);
+    //     this._addNewEventElement.disabled = false;
+    //   }).catch(() => {
+    //     formController.shake();
+    //     // remove(this._form);
+    //     // this._addNewEventElement.disabled = false;
+    //   });
+    // });
   }
 
   filterEvents(currentFilter) {
