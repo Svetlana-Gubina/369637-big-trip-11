@@ -1,22 +1,23 @@
 import {render, replace, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import {getSelectedOptions, filterNullProps} from '../constants.js';
+import {filterNullProps} from '../constants.js';
 import Model from '../models//model.js';
+import moment from 'moment';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export const parseFormData = (formData) => {
-  return new Model({
-    "type": formData.get(`event-type`),
-    "date_from": formData.get(`event-start-time`),
-    "date_to": formData.get(`event-end-time`),
-    "base_price": formData.get(`event-price`),
-    "is_favorite": Boolean(formData.get(`event-favorite`)),
-    "destination": formData.get(`event-destination`),
-    "offers": null, // getSelectedOptions(formData),
-  });
-};
+// export const parseFormData = (formData) => {
+//   return new Model({
+//     "type": formData.get(`event-type`),
+//     "date_from": formData.get(`event-start-time`),
+//     "date_to": formData.get(`event-end-time`),
+//     "base_price": formData.get(`event-price`),
+//     "is_favorite": Boolean(formData.get(`event-favorite`)),
+//     "destination": formData.get(`event-destination`),
+//     "offers": null, // getSelectedOptions(formData),
+//   });
+// };
 
 export default class PointController {
   constructor(container, point, onChangeView, onDataChange, list, api) {
@@ -35,12 +36,14 @@ export default class PointController {
   init() {
     this._pointEdit.setSubmitHandler((evt) => {
       evt.preventDefault();
-      const formData = this._pointEdit.getData();
-      const entry = parseFormData(formData);
+      // this._pointEdit.rerender();
+      // const formData = this._pointEdit.getData();
+      const entry = this._pointEdit.parseFormData();
+      console.log(entry.toRAW());
       this._pointEdit.setData({
         saveButtonLabel: `Saving...`,
       });
-      // this._onDataChange(this, `update`, this._point, entry);
+      this._onDataChange(this, `update`, this._point, entry);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
@@ -64,6 +67,7 @@ export default class PointController {
     this._pointEdit.getElement()
     .querySelector(`.event__rollup-btn`)
        .addEventListener(`click`, () => {
+         this._pointEdit.reset();
          replace(this._pointView, this._pointEdit);
          document.removeEventListener(`keydown`, this._onEscKeyDown);
        });
@@ -88,6 +92,7 @@ export default class PointController {
     let eventItems = this._list.getElement().querySelectorAll(`.trip-events__item`);
     for (const item of eventItems) {
       if (item.contains(this._pointEdit.getElement())) {
+        this._pointEdit.reset();
         item.replaceChild(this._pointView.getElement(), this._pointEdit.getElement());
       }
     }
@@ -95,6 +100,7 @@ export default class PointController {
 
   _onEscKeyDown(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
+      this._pointEdit.reset();
       replace(this._pointView, this._pointEdit);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     }

@@ -61,24 +61,24 @@ export const getSelectedOptions = (formData) => {
 
 export const filterNullProps = (obj) => Object.fromEntries(Object.entries(obj).filter(([key, value]) => value !== null));
 
-export const getFormDateTime = (formData, name) => {
-  formData = {
-    get() {
-      return name;
-    }
-  };
-  const value = formData.get(name);
-  return value ? moment(value).toDate() : null;
-};
+// export const getFormDateTime = (formData, name) => {
+//   formData = {
+//     get() {
+//       return name;
+//     }
+//   };
+//   const value = formData.get(name);
+//   return value ? moment(value).toDate() : null;
+// };
 
-export const filteredArray = (arr, item) => {
-  let index = arr.indexOf(item);
-  let newArr = arr.slice();
-  if (index >= 0) {
-    newArr.splice(index, 1);
-  }
-  return newArr;
-};
+// export const filteredArray = (arr, item) => {
+//   let index = arr.indexOf(item);
+//   let newArr = arr.slice();
+//   if (index >= 0) {
+//     newArr.splice(index, 1);
+//   }
+//   return newArr;
+// };
 
 export const FiltersNames = [
   {

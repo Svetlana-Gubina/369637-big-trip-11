@@ -19,7 +19,7 @@ const createOptionsMarkup = (options) => {
 };
 
 export default class Card extends AbstractComponent {
-  constructor({id, eventType, eventStart, eventEnd, city, cost, options}) {
+  constructor({id, eventType, eventStart, eventEnd, destination, cost, options}) {
     super();
     this._id = id;
     this._eventType = eventType;
@@ -29,7 +29,7 @@ export default class Card extends AbstractComponent {
     this._durationDays = getDays(this._duration);
     this._durationHrs = moment(this._duration).hours() < 10 ? `0` + moment(this._duration).hours() : moment(this._duration).hours();
     this._durationMins = moment(this._duration).minutes() < 10 ? `0` + moment(this._duration).minutes() : moment(this._duration).minutes();
-    this._city = city;
+    this._city = destination.name;
     this._cost = cost;
     this._options = options.slice(0, 3);
     this._optionsMarkup = createOptionsMarkup(this._options);

@@ -26,7 +26,6 @@ export default class Form extends AbstractSmartComponent {
     this._flatpickr = null;
     this._buttonLabels = DefaultLabels;
     this._applyFlatpickr();
-    this._addDatalis();
     this._subscribeOnEvents();
     this._submitHandler = null;
     this._cancelButtonClickHandler = null;
@@ -134,6 +133,21 @@ export default class Form extends AbstractSmartComponent {
     this._addDatalis();
   }
 
+  reset() {
+    // const event = this._event;
+    // this._eventType = event.eventType;
+    // this._city = event.city;
+    // this._cost = event.cost;
+    // this._options = event.options;
+    // this._eventStart = event.eventStart;
+    // this._eventEnd = event.eventEnd;
+    // this._photos = event.photos;
+    // this._description = event.description;
+    // this._isFavorite = event.isFavorite;
+
+    this.rerender();
+  }
+
   setCancelButtonClickHandler(handler) {
     this.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, handler);
@@ -191,13 +205,15 @@ export default class Form extends AbstractSmartComponent {
   }
 
   _subscribeOnEvents() {
+    this._addDatalis();
+
     this.getElement()
     .querySelector(`.event__type-list`).addEventListener(`click`, (evt) => {
       evt.preventDefault();
       if (evt.target.tagName === `LABEL`) {
-        check(this._form.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
-        uncheck(this._form.getElement().querySelector(`.event__type-toggle`));
-        this._form.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
+        check(this.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
+        uncheck(this.getElement().querySelector(`.event__type-toggle`));
+        this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
         let type = AVAILABLE_EVENT_TYPES.find((it) => it === evt.target.textContent);
         let prep;
         if (AVAILABLE_EVENT_TYPES.slice(0, 6).includes(type)) {
@@ -205,7 +221,7 @@ export default class Form extends AbstractSmartComponent {
         } else {
           prep = ` in `;
         }
-        this._form.getElement().querySelector(`.event__label`).textContent = type + prep;
+        this.getElement().querySelector(`.event__label`).textContent = type + prep;
 
         this._api.getOffers().then((list) => this.renderOptions(evt, list));
       }
@@ -215,12 +231,11 @@ export default class Form extends AbstractSmartComponent {
     .querySelector(`.event__field-group--destination`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
       this._city = evt.target.value;
-      // this.rerender();
     });
 
     this.getElement().querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
       evt.preventDefault();
-      this._form.getElement().querySelector(`#event-price-1`).value = evt.target.value;
+      this._cost = evt.target.value;
     });
   }
 

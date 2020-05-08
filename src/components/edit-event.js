@@ -7,31 +7,39 @@ import '../../node_modules/flatpickr/dist/themes/light.css';
 import Destinations from './destinations.js';
 import {renderOption} from './option.js';
 import Offers from './offers.js';
+import Model from '../models//model.js';
+import moment from 'moment';
+
+const getSelectedOptions = (options, formData) => {
+  return options.map((option) => option.title).reduce((acc, option) => formData.get(`event-offer-${option}`) ? [...acc, option] : acc, []);
+};
 
 export default class EditEvent extends AbstractSmartComponent {
-  constructor({eventType, city, cost, options, eventStart, eventEnd, photos, description, isFavorite}, api) {
+  constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, api) {
     super();
+    this._event = {eventType, destination, cost, options, eventStart, eventEnd, isFavorite};
     this._api = api;
     this._eventType = eventType;
-    this._city = city;
+    this._city = destination.name;
     this._cost = cost;
     this._options = options;
     this._eventStart = eventStart;
     this._eventEnd = eventEnd;
+    this._start = new Date(eventStart).toLocaleDateString();
+    this._end = new Date(eventEnd).toLocaleDateString();
     this._diffTime = this._eventEnd - this._eventStart;
     this._hoursStart = new Date(this._eventStart).getHours();
     this._hoursEnd = new Date(this._eventEnd).getHours();
     this._minutesStart = new Date(this._eventStart).getMinutes();
     this._minutesEnd = new Date(this._eventEnd).getMinutes();
-    this._photos = photos;
-    this._description = description;
+    this._photos = destination.pictures;
+    this._description = destination.description;
     this._isFavorite = isFavorite;
     this._buttonLabels = DefaultLabels;
     this._subscribeOnEvents();
 
     this._flatpickr = null;
     this._applyFlatpickr();
-    this._addDatalis();
     this._submitHandler = null;
     this._deleteButtonClickHandler = null;
   }
@@ -44,7 +52,7 @@ export default class EditEvent extends AbstractSmartComponent {
                 <span class="visually-hidden">Choose event type</span>
                 <img class="event__type-icon" width="17" height="17" src="img/icons/${this._eventType.toLowerCase()}.png"  alt="Event type icon">
                 </label>
-                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" name="event-type">
+                <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
                   <div class="event__type-list">
                     <fieldset class="event__type-group">
@@ -80,12 +88,12 @@ export default class EditEvent extends AbstractSmartComponent {
                   <label class="visually-hidden" for="event-start-time-1">
                     From
                   </label>
-                  <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${new Date(this._eventStart).toLocaleDateString()} ${this._hoursStart}:${this._minutesStart}">
+                  <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${this._start} ${this._hoursStart}:${this._minutesStart}">
                   &mdash;
                   <label class="visually-hidden" for="event-end-time-1">
                     To
                   </label>
-                  <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${new Date(this._eventEnd).toLocaleDateString()} ${this._hoursEnd}:${this._minutesEnd}">
+                  <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${this._end} ${this._hoursEnd}:${this._minutesEnd}">
                 </div>
 
                 <div class="event__field-group  event__field-group--price">
@@ -129,13 +137,26 @@ export default class EditEvent extends AbstractSmartComponent {
               <div class="event__photos-container">
               <div class="event__photos-tape">
               ${this._photos.map((photo) => (`
-              <img class="event__photo" src="http://picsum.photos/300/150?r=${photo}" alt="Event photo">`
+              <img class="event__photo" src="${photo.src}" alt="Event photo">`
               .trim())).join(``)}
               </div>
               </div>
             </section>
           </section>
         </form>`.trim();
+  }
+
+  parseFormData() {
+    const formData = this.getData();
+    return new Model({
+      "type": formData.get(`event-type`) || this._eventType,
+      "date_from": formData.get(`event-start-time`),
+      "date_to": formData.get(`event-end-time`),
+      "base_price": formData.get(`event-price`),
+      "is_favorite": Boolean(formData.get(`event-favorite`)),
+      "destination": formData.get(`event-destination`),
+      "offers": getSelectedOptions(this._options, formData),
+    });
   }
 
   getData() {
@@ -161,20 +182,31 @@ export default class EditEvent extends AbstractSmartComponent {
       enableTime: true,
       dateFormat: `d/m/Y H:m`,
       maxDate: `01.01.2022 00:00`,
-      altInput: true,
-      allowInput: true,
-      defaultDate: this._eventStart || `today`,
+      defaultDate: this._eventStart,
     });
 
     this._flatpickr = flatpickr(end, {
       enableTime: true,
-      dateFormat: `d.m.Y H:m`,
-      minDate: new Date(this._eventStart),
+      dateFormat: `d/m/Y H:m`,
+      minDate: this._eventStart,
       maxDate: `01.01.2022 00:00`,
-      altInput: true,
-      allowInput: true,
-      defaultDate: this._eventEnd || `today`,
+      defaultDate: this._eventEnd,
     });
+  }
+
+  reset() {
+    const event = this._event;
+    this._eventType = event.eventType;
+    this._city = event.destination.name;
+    this._cost = event.cost;
+    this._options = event.options;
+    this._eventStart = new Date(event.eventStart).toLocaleDateString();
+    this._eventEnd = new Date(event.eventEnd).toLocaleDateString();
+    this._photos = event.destination.pictures;
+    this._description = event.destination.description;
+    this._isFavorite = event.isFavorite;
+
+    this.rerender();
   }
 
   setDeleteButtonClickHandler(handler) {
@@ -186,7 +218,6 @@ export default class EditEvent extends AbstractSmartComponent {
 
   setSubmitHandler(handler) {
     this.getElement().addEventListener(`submit`, handler);
-    this._options.map((option) => console.log({option}));
     this._submitHandler = handler;
   }
 
@@ -205,11 +236,12 @@ export default class EditEvent extends AbstractSmartComponent {
   }
 
   _subscribeOnEvents() {
+    this._addDatalis();
+
     this.getElement()
     .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
       this._isFavorite = !this._isFavorite;
-      this.rerender();
     });
 
     this.getElement()
@@ -226,6 +258,7 @@ export default class EditEvent extends AbstractSmartComponent {
         } else {
           prep = ` in `;
         }
+        this._eventType = evt.target.textContent.toLowerCase();
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
@@ -253,5 +286,12 @@ export default class EditEvent extends AbstractSmartComponent {
     .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
       this._cost = evt.target.value;
     });
+
+    this.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
+      this._eventStart = evt.target.value;
+      this._eventEnd = evt.target.value;
+      this._applyFlatpickr();
+    });
+
   }
 }

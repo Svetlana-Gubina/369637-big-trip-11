@@ -185,25 +185,27 @@ export default class TripController {
   }
 
   filterEvents(currentFilter) {
-    this._cardList.getElement().innerHTML = ``;
-    const data = this._pointsModel.getpointsAll();
-    switch (currentFilter) {
-      case `Future`:
-        const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());
-        futureEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
-        let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
-        this.updateTotal(futCosts);
-        break;
-      case `Past`:
-        const pastEvents = data.slice().filter((event) => event.eventEnd < Date.now());
-        pastEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
-        let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
-        this.updateTotal(pastCosts);
-        break;
-      case `Everything`:
-        this.rerender();
-        this.renderTotalCount();
-        break;
-    }
+    // При смене фильтра разбивка по дням сохраняется.
+
+    // this._cardList.getElement().innerHTML = ``;
+    // const data = this._pointsModel.getpointsAll();
+    // switch (currentFilter) {
+    //   case `Future`:
+    //     const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());
+    //     futureEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+    //     let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
+    //     this.updateTotal(futCosts);
+    //     break;
+    //   case `Past`:
+    //     const pastEvents = data.slice().filter((event) => event.eventEnd < Date.now());
+    //     pastEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+    //     let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
+    //     this.updateTotal(pastCosts);
+    //     break;
+    //   case `Everything`:
+    //     this.rerender();
+    //     this.renderTotalCount();
+    //     break;
+    // }
   }
 }
