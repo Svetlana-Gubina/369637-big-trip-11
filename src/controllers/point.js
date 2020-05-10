@@ -1,26 +1,12 @@
 import {render, replace, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import {filterNullProps} from '../constants.js';
-import Model from '../models//model.js';
-import moment from 'moment';
+// import Model from '../models//model.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-// export const parseFormData = (formData) => {
-//   return new Model({
-//     "type": formData.get(`event-type`),
-//     "date_from": formData.get(`event-start-time`),
-//     "date_to": formData.get(`event-end-time`),
-//     "base_price": formData.get(`event-price`),
-//     "is_favorite": Boolean(formData.get(`event-favorite`)),
-//     "destination": formData.get(`event-destination`),
-//     "offers": null, // getSelectedOptions(formData),
-//   });
-// };
-
 export default class PointController {
-  constructor(container, point, onChangeView, onDataChange, list, api) {
+  constructor(container, point, onChangeView, onDataChange, list, api, formController) {
     this._list = list;
     this._container = container;
     this._onChangeView = onChangeView;
@@ -31,15 +17,14 @@ export default class PointController {
     this._pointView = new Card(point);
     this._pointEdit = new EditEvent(point, api);
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
+    this._formController = formController;
   }
 
   init() {
     this._pointEdit.setSubmitHandler((evt) => {
       evt.preventDefault();
-      // this._pointEdit.rerender();
-      // const formData = this._pointEdit.getData();
       const entry = this._pointEdit.parseFormData();
-      console.log(entry.toRAW());
+
       this._pointEdit.setData({
         saveButtonLabel: `Saving...`,
       });
@@ -59,6 +44,7 @@ export default class PointController {
        .querySelector(`.event__rollup-btn`)
        .addEventListener(`click`, (evt) => {
          evt.preventDefault();
+         this._formController.destroy();
          this._onChangeView();
          replace(this._pointEdit, this._pointView);
          document.addEventListener(`keydown`, this._onEscKeyDown);

@@ -1,23 +1,11 @@
 import {render, Position} from '../utils.js';
 import Form from '../components/form.js';
-import {AVAILABLE_EVENT_TYPES, filterNullProps} from '../constants.js';
-import {check, uncheck} from '../utils.js';
-import {getSelectedOptions} from '../constants.js';
-import Model from '../models//model.js';
+// import {AVAILABLE_EVENT_TYPES, filterNullProps} from '../constants.js';
+// import {check, uncheck} from '../utils.js';
+// import {getSelectedOptions} from '../constants.js';
+// import Model from '../models//model.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
-
-export const parseFormData = (formData) => {
-  return new Model({
-    "type": formData.get(`event-type`),
-    "date_from": formData.get(`event-start-time`),
-    "date_to": formData.get(`event-end-time`),
-    "base_price": formData.get(`event-price`),
-    "is_favorite": Boolean(formData.get(`event-favorite`)),
-    "destination": formData.get(`event-destination`),
-    "offers": getSelectedOptions(formData),
-  });
-};
 
 export default class FormController {
   constructor(container, addNewEventElement, api, onDataChange) {
@@ -39,19 +27,17 @@ export default class FormController {
 
     this._form.setSubmitHandler((evt) => {
       evt.preventDefault();
-      const formData = this._form.getData();
-      // const formEntry = parseFormData(formData);
-      // const model = Model.parseEvent(formEntry);
+      const formEntry = this._form.parseFormData();
+      // console.log(formEntry.toRAW());
       this._form.setData({
         saveButtonLabel: `Saving...`,
       });
-      // const newData = null;
-      // this._onDataChange(this, `create`,null, newData);
+      this._onDataChange(this, `create`, null, formEntry);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
     this._form.setCancelButtonClickHandler(() => {
-      // this._form.reset();
+      this._form.reset();
       this._form.remove();
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });

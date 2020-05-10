@@ -1,6 +1,6 @@
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {check, uncheck} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -8,11 +8,7 @@ import Destinations from './destinations.js';
 import {renderOption} from './option.js';
 import Offers from './offers.js';
 import Model from '../models//model.js';
-import moment from 'moment';
-
-const getSelectedOptions = (options, formData) => {
-  return options.map((option) => option.title).reduce((acc, option) => formData.get(`event-offer-${option}`) ? [...acc, option] : acc, []);
-};
+import DOMPurify from 'dompurify';
 
 export default class EditEvent extends AbstractSmartComponent {
   constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, api) {
@@ -152,9 +148,14 @@ export default class EditEvent extends AbstractSmartComponent {
       "type": formData.get(`event-type`) || this._eventType,
       "date_from": formData.get(`event-start-time`),
       "date_to": formData.get(`event-end-time`),
-      "base_price": formData.get(`event-price`),
+      "base_price": Number(formData.get(`event-price`)),
       "is_favorite": Boolean(formData.get(`event-favorite`)),
-      "destination": formData.get(`event-destination`),
+      "destination": {
+        "description": ``,
+        "name": formData.get(`event-destination`),
+        "pictures": [
+        ],
+      },
       "offers": getSelectedOptions(this._options, formData),
     });
   }
@@ -270,7 +271,6 @@ export default class EditEvent extends AbstractSmartComponent {
     .querySelector(`.event__field-group--destination`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
       this._city = evt.target.value;
-
       const photos = this.getElement().querySelector(`.event__photos-tape`);
       const destinationDescription = this.getElement().querySelector(`.event__destination-description`);
       this._api.getDestinations().then((list) => new Destinations(list, this._city).getInfo(evt.target.value))
@@ -284,11 +284,16 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this.getElement()
     .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
-      this._cost = evt.target.value;
+      this._cost = DOMPurify.sanitize(evt.target.value);
     });
 
     this.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
       this._eventStart = evt.target.value;
+      this._eventEnd = evt.target.value;
+      this._applyFlatpickr();
+    });
+
+    this.getElement().querySelector(`#event-end-time-1`).addEventListener(`change`, (evt) => {
       this._eventEnd = evt.target.value;
       this._applyFlatpickr();
     });

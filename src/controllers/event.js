@@ -1,10 +1,8 @@
 import {render, remove, Position} from '../utils.js';
-import {getEvent} from '../data.js';
-import {filterNullProps} from '../constants.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
-import PointController, {parseFormData} from './point.js';
+import PointController from './point.js';
 import moment from 'moment';
 import Model from '../models//model.js';
 import FormController from './form.js';
@@ -26,6 +24,7 @@ export default class TripController {
     this._subscriptions = [];
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
+    this._formController = new FormController(this._container, this._addNewEventElement, this._api, this._onDataChange);
   }
 
   renderDefault() {
@@ -114,7 +113,7 @@ export default class TripController {
   }
 
   _renderPoint(point, container) {
-    const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList, this._api);
+    const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
     pointController.init();
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
@@ -126,8 +125,18 @@ export default class TripController {
   _onDataChange(controller, actionType, oldData, newData) {
     switch (actionType) {
       case `create`:
-        console.log(`oops!`);
-        controller.destroy();
+        this._api.createEvent(event)
+        .then((event) => {
+          const isSuccess = this._pointsModel.addEvent(event);
+          if (isSuccess) {
+            controller.destroy();
+            this.rerender();
+            this.renderTotalCount();
+          }
+        })
+        .catch(() => {
+          controller.shake();
+        });
         break;
       case `update`:
         this._api.updateEvent(oldData.id, newData)
@@ -156,56 +165,35 @@ export default class TripController {
     }
   }
 
-
   addEvent() {
     this.rerender();
-    const formController = new FormController(this._container, this._addNewEventElement, this._api, this._onDataChange);
+    const formController = this._formController;
     formController.render();
     this._onChangeView();
-
-    // this._form.getElement().addEventListener(`submit`, (evt) => {
-    //   evt.preventDefault();
-    //   const formData = this._form.getData();
-    //   const formEntry = parseFormData(formData);
-    //   // const defaultEvent = Model.parseEvent(getEvent());
-    //   // const newEvent = Object.assign({}, defaultEvent, formEntry);
-    //   this._api.createEvent(formEntry)
-    //   .then((pointModel) => {
-    //     this._pointsModel.addEvent(pointModel);
-    //     this.rerender();
-    //     this.renderTotalCount();
-    //     remove(this._form);
-    //     this._addNewEventElement.disabled = false;
-    //   }).catch(() => {
-    //     formController.shake();
-    //     // remove(this._form);
-    //     // this._addNewEventElement.disabled = false;
-    //   });
-    // });
   }
 
   filterEvents(currentFilter) {
-    // При смене фильтра разбивка по дням сохраняется.
+    //  TODO: При смене фильтра разбивка по дням сохраняется.
 
-    // this._cardList.getElement().innerHTML = ``;
-    // const data = this._pointsModel.getpointsAll();
-    // switch (currentFilter) {
-    //   case `Future`:
-    //     const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());
-    //     futureEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
-    //     let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
-    //     this.updateTotal(futCosts);
-    //     break;
-    //   case `Past`:
-    //     const pastEvents = data.slice().filter((event) => event.eventEnd < Date.now());
-    //     pastEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
-    //     let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
-    //     this.updateTotal(pastCosts);
-    //     break;
-    //   case `Everything`:
-    //     this.rerender();
-    //     this.renderTotalCount();
-    //     break;
-    // }
+    this._cardList.getElement().innerHTML = ``;
+    const data = this._pointsModel.getpointsAll();
+    switch (currentFilter) {
+      case `Future`:
+        const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());
+        futureEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+        let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
+        this.updateTotal(futCosts);
+        break;
+      case `Past`:
+        const pastEvents = data.slice().filter((event) => event.eventEnd < Date.now());
+        pastEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+        let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
+        this.updateTotal(pastCosts);
+        break;
+      case `Everything`:
+        this.rerender();
+        this.renderTotalCount();
+        break;
+    }
   }
 }
