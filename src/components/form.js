@@ -4,7 +4,7 @@ import {check, uncheck} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
-import Destinations from './destinations.js';
+// import Destinations from './destinations.js';
 import Offers from './offers.js';
 import {formDefaultEvent} from '../data.js';
 import DOMPurify from 'dompurify';
@@ -183,7 +183,7 @@ export default class Form extends AbstractSmartComponent {
 
   _addDatalis() {
     let container = this.getElement().querySelector(`.event__field-group--destination`);
-    this._api.getDestinations().then((list) => new Destinations(list, this._city).render(container));
+    // this._api.getDestinations().then((list) => new Destinations(list, this._city).render(container));
   }
 
   setData(labels) {

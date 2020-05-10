@@ -6,6 +6,7 @@ import PointController from './point.js';
 import moment from 'moment';
 import Model from '../models//model.js';
 import FormController from './form.js';
+import DestinationsModel from '../models/destinations.js';
 
 
 export default class TripController {
@@ -113,8 +114,13 @@ export default class TripController {
   }
 
   _renderPoint(point, container) {
-    const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
-    pointController.init();
+    const pointController = new PointController(container, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
+    const destinations = new DestinationsModel();
+    this._api.getDestinations().then(function (points) {
+      destinations.setPoints(points);
+      // console.log(destinations.getPointsAll()[0]);
+      pointController.render(point, {points: destinations});
+    });
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 

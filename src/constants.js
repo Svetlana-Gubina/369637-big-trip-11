@@ -1,6 +1,4 @@
 import {getRandomBoolean} from './utils.js';
-import moment from 'moment';
-
 export const MILLISECONDS = 86400000;
 
 
@@ -48,15 +46,6 @@ export const AVAILABLE_OPTIONS = new Set([
   }
 ]);
 
-// export const getSelectedOptions = (formData) => {
-//   const selectedTitles = Array.from(AVAILABLE_OPTIONS)
-//                               .map(({shortTitle}) => shortTitle)
-//                               .reduce((acc, option) => formData.get(`event-offer-${option}`) ? [...acc, option] : acc, []);
-//   const selectedOptions = Array.from(AVAILABLE_OPTIONS)
-//                                 .reduce((acc, it) => selectedTitles.includes(it.shortTitle) ? [...acc, it] : acc, []);
-//   return selectedOptions.length ? selectedOptions : null;
-// };
-
 export const filterNullProps = (obj) => Object.fromEntries(Object.entries(obj).filter(([key, value]) => value !== null));
 
 // export const getFormDateTime = (formData, name) => {
@@ -67,15 +56,6 @@ export const filterNullProps = (obj) => Object.fromEntries(Object.entries(obj).f
 //   };
 //   const value = formData.get(name);
 //   return value ? moment(value).toDate() : null;
-// };
-
-// export const filteredArray = (arr, item) => {
-//   let index = arr.indexOf(item);
-//   let newArr = arr.slice();
-//   if (index >= 0) {
-//     newArr.splice(index, 1);
-//   }
-//   return newArr;
 // };
 
 export const FiltersNames = [
@@ -97,4 +77,9 @@ export const DefaultLabels = {
 
 export const getSelectedOptions = (options, formData) => {
   return options.map((option) => option.title).reduce((acc, option) => formData.get(`event-offer-${option}`) ? [...acc, option] : acc, []);
+};
+
+export const getNamedElement = (list, name) => {
+  const index = list.findIndex((it) => it[`name`] === name);
+  return list[index];
 };

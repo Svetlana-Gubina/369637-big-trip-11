@@ -1,8 +1,8 @@
 import AbstractComponent from './abstract-component.js';
 import {render, Position} from '../utils.js';
 
-export default class Destinations extends AbstractComponent {
-  constructor(list, city) {
+export default class Select extends AbstractComponent {
+  constructor(city, list) {
     super();
     this._city = city;
     this._list = list;
@@ -15,11 +15,6 @@ export default class Destinations extends AbstractComponent {
     <option value="${city.name}">${city.name}</option>`
     .trim())).join(``)}
     </select>`;
-  }
-
-  getInfo(name) {
-    const index = this._list.findIndex((it) => it[`name`] === name);
-    return this._list[index];
   }
 
   render(container) {

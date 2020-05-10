@@ -1,6 +1,16 @@
 import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
-import {MILLISECONDS} from '../constants.js';
+import {MILLISECONDS, AVAILABLE_EVENT_TYPES} from '../constants.js';
+
+export const getPrep = (type) => {
+  let prep;
+  if (AVAILABLE_EVENT_TYPES.slice(0, 7).includes(type)) {
+    prep = ` to `;
+  } else {
+    prep = ` in `;
+  }
+  return prep;
+};
 
 const getDays = (duration) => {
   if (duration > MILLISECONDS) {
@@ -23,6 +33,7 @@ export default class Card extends AbstractComponent {
     super();
     this._id = id;
     this._eventType = eventType;
+    this._prep = getPrep(this._eventType);
     this._eventStart = new Date(eventStart).getTime();
     this._eventEnd = new Date(eventEnd).getTime();
     this._duration = this._eventEnd - this._eventStart;
@@ -40,7 +51,7 @@ export default class Card extends AbstractComponent {
           <div class="event__type">
             <img class="event__type-icon" width="42" height="42" src="img/icons/${this._eventType}.png" alt="Event type icon">
           </div>
-          <h3 class="event__title">${this._eventType} to ${this._city}</h3>
+          <h3 class="event__title">${this._eventType} ${this._prep} ${this._city}</h3>
 
           <div class="event__schedule">
           <p class="event__time">
