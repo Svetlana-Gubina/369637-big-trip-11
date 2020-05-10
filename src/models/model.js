@@ -1,16 +1,13 @@
 export default class Model {
-  constructor(data) {
-    this.id = data[`id`];
-    this.eventType = data[`type`];
-    this.isFavorite = Boolean(data[`is_favorite`]);
-    this.eventStart = data[`date_from`];
-    this.eventEnd = data[`date_to`];
-    this.cost = data[`base_price`];
-    this.destination = data[`destination`];
-    this.city = data[`destination`][`name`];
-    this.description = data[`destination`][`description`] || ``;
-    this.options = data[`offers`] || [];
-    this.photos = new Array(data[`pictures`] || []);
+  constructor(event) {
+    this.cost = event[`base_price`];
+    this.id = event[`id`];
+    this.eventType = event[`type`];
+    this.isFavorite = Boolean(event[`is_favorite`]);
+    this.options = event[`offers`] || [];
+    this.destination = event[`destination`];
+    this.eventStart = event[`date_from`];
+    this.eventEnd = event[`date_to`];
   }
 
   static parseEvent(data) {
@@ -23,15 +20,13 @@ export default class Model {
 
   toRAW() {
     return {
-      'id': this.id,
-      'is_favorite': this.isFavorite,
-      'type': this.eventType,
-      'date_from': this.eventStart,
-      'date_to': this.eventEnd,
-      'base_price': this.cost,
-      'destination': this.destination,
-      'offers': this.options,
-      'pictures': this.photos,
+      "base_price": this.cost,
+      "date_from": this.eventStart,
+      "date_to": this.eventEnd,
+      "destination": this.destination,
+      "is_favorite": this.isFavorite,
+      "offers": this.options,
+      "type": this.eventType,
     };
   }
 }

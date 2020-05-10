@@ -16,13 +16,14 @@ const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
 const tripInfo = document.querySelector(`.trip-main`);
 const tripEvents = document.querySelector(`.trip-events`);
+const addNewEventElement = document.querySelector(`.trip-main__event-add-btn`);
 
 const pointsModel = new PointsModel();
-const controller = new TripController(tripEvents, pointsModel, api);
+const controller = new TripController(tripEvents, pointsModel, addNewEventElement, api);
 
-api.getData().then(function (data) {
-  pointsModel.setpoints(data);
-  const routeInfo = new RouteInfoElement({data: pointsModel});
+api.getData().then(function (points) {
+  pointsModel.setpoints(points);
+  const routeInfo = new RouteInfoElement({points: pointsModel});
   routeInfo.render(tripInfo);
   controller.render(routeInfo);
   controller.renderTotalCount();
@@ -64,7 +65,7 @@ headerCont.addEventListener(`click`, (evt) => {
     statisticsComponent.hide();
     controller.show();
     filtersForm.show();
-    controller.addEvent();
+    controller.addEvent(addNewEventElement);
   }
 });
 

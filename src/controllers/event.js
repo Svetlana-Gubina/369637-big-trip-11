@@ -1,23 +1,22 @@
 import {render, remove, Position} from '../utils.js';
-import {getEvent} from '../data.js';
-import {filterNullProps, getFormDateTime} from '../constants.js';
 import Day from '../components/day.js';
-import Form from '../components/form.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import PointController from './point.js';
 import moment from 'moment';
 import Model from '../models//model.js';
+import FormController from './form.js';
+
 
 export default class TripController {
-  constructor(container, pointsModel, api) {
+  constructor(container, pointsModel, addNewEventElement, api) {
     this._container = container;
     this._pointsModel = pointsModel;
     this._api = api;
-    this._form = new Form(api);
     this._cardList = new CardList();
     this._sortComponent = new Sort();
     this._totalField = null;
+    this._addNewEventElement = addNewEventElement;
     this._days = [];
     this._onChangeView = this._onChangeView.bind(this);
     this._onDataChange = this._onDataChange.bind(this);
@@ -25,6 +24,7 @@ export default class TripController {
     this._subscriptions = [];
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
+    this._formController = new FormController(this._container, this._addNewEventElement, this._api, this._onDataChange);
   }
 
   renderDefault() {
@@ -113,7 +113,7 @@ export default class TripController {
   }
 
   _renderPoint(point, container) {
-    const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList, this._api);
+    const pointController = new PointController(container, point, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
     pointController.init();
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
@@ -122,11 +122,25 @@ export default class TripController {
     this._subscriptions.forEach((it) => it());
   }
 
-  _onDataChange(pointController, actionType, oldData, newData) {
+  _onDataChange(controller, actionType, oldData, newData) {
     switch (actionType) {
+      case `create`:
+        this._api.createEvent(event)
+        .then((event) => {
+          const isSuccess = this._pointsModel.addEvent(event);
+          if (isSuccess) {
+            controller.destroy();
+            this.rerender();
+            this.renderTotalCount();
+          }
+        })
+        .catch(() => {
+          controller.shake();
+        });
+        break;
       case `update`:
-        this._api.updateEvent(oldData.id, newData.toRAW()
-        ).then((event) => {
+        this._api.updateEvent(oldData.id, newData)
+        .then((event) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, event);
           if (isSuccess) {
             this.rerender();
@@ -134,7 +148,7 @@ export default class TripController {
           }
         })
         .catch(() => {
-          pointController.shake();
+          controller.shake();
         });
         break;
       case `delete`:
@@ -145,44 +159,22 @@ export default class TripController {
           this.rerender();
           this.renderTotalCount();
         }).catch(() => {
-          pointController.shake();
+          controller.shake();
         });
         break;
     }
   }
 
-
   addEvent() {
-    render(this._container, this._form, Position.AFTERBEGIN);
-
-    this._form.getElement().addEventListener(`submit`, (evt) => {
-      evt.preventDefault();
-      const formData = this._form.getData();
-      const defaultEvent = getEvent();
-
-      const formEntry = filterNullProps({
-        eventType: formData.get(`event-type`),
-        eventStart: getFormDateTime(formData.get(`event-start-time`)),
-        eventEnd: getFormDateTime(formData.get(`event-end-time`)),
-        city: formData.get(`event-destination`),
-        cost: Number(formData.get(`event-price`)),
-      });
-      const newEvent = Object.assign({}, defaultEvent, formEntry);
-      const model = Model.parseEvent(newEvent);
-
-      this._api.createEvent(model.toRAW())
-      .then((pointModel) => {
-        this._pointsModel.addEvent(pointModel);
-        this.rerender();
-        this.renderTotalCount();
-        remove(this._form);
-      }).catch(() => {
-        this._form.shake();
-      });
-    });
+    this.rerender();
+    const formController = this._formController;
+    formController.render();
+    this._onChangeView();
   }
 
   filterEvents(currentFilter) {
+    //  TODO: При смене фильтра разбивка по дням сохраняется.
+
     this._cardList.getElement().innerHTML = ``;
     const data = this._pointsModel.getpointsAll();
     switch (currentFilter) {

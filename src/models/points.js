@@ -34,7 +34,7 @@ export default class PointsModel {
   }
 
   addEvent(event) {
-    this._points = [].concat(event, this._tasks);
+    this._points = [].concat(event, this._points);
     this._callHandlers(this._dataChangeHandlers);
   }
 
