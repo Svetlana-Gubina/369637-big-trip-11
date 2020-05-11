@@ -1,6 +1,7 @@
-import {render, replace, Position} from '../utils.js';
+import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
+import Offers from '../models//offers.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -17,9 +18,22 @@ export default class PointController {
     this._formController = formController;
   }
 
+  destroy() {
+    remove(this._pointView);
+    remove(this._pointEdit);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
+  }
+
   render(point, {points}) {
     this._pointView = new Card(point);
-    this._pointEdit = new EditEvent(point, {points}, this._api);
+    const pointEdit = new EditEvent(point, {points}, this._api);
+    this._pointEdit = pointEdit;
+
+    const offers = new Offers();
+    this._api.getOffers().then(function (list) {
+      offers.setPoints(list);
+      pointEdit.setOptionsList({points: offers});
+    });
 
     this._pointEdit.setSubmitHandler((evt) => {
       evt.preventDefault();
@@ -36,7 +50,7 @@ export default class PointController {
         deleteButtonLabel: `Deleting...`,
       });
 
-      this._onDataChange(this, `delete`, this._point, null);
+      this._onDataChange(this, `delete`, point, null);
     });
 
     this._pointView.getElement()

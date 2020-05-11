@@ -1,3 +1,11 @@
+export const show = (element) => {
+  element.classList.remove(`visually-hidden`);
+};
+
+export const hide = (element) => {
+  element.classList.add(`visually-hidden`);
+};
+
 export const check = (element) => {
   element.checked = true;
 };

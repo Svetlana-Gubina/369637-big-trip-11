@@ -5,11 +5,12 @@ import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import {renderOption} from './option.js';
-import Offers from './offers.js';
 import Select from './select.js';
 import {getPrep} from './card.js';
 import Model from '../models//model.js';
 import DOMPurify from 'dompurify';
+import Offer from './offer.js';
+import {render, Position} from '../utils.js';
 
 export default class EditEvent extends AbstractSmartComponent {
   constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}, api) {
@@ -39,6 +40,7 @@ export default class EditEvent extends AbstractSmartComponent {
     this._isFavorite = isFavorite;
     this._buttonLabels = DefaultLabels;
     this._subscribeOnEvents();
+    this._optionsList = [];
 
     this._flatpickr = null;
     this._applyFlatpickr();
@@ -247,6 +249,10 @@ export default class EditEvent extends AbstractSmartComponent {
     this.rerender();
   }
 
+  setOptionsList({points}) {
+    this._optionsList = points.getPointsAll();
+  }
+
   _subscribeOnEvents() {
     this._addDatalis();
 
@@ -269,7 +275,13 @@ export default class EditEvent extends AbstractSmartComponent {
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
-        this._api.getOffers().then((list) => new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase()));
+
+        const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
+        newItem.offers.forEach(function (offer) {
+          const option = new Offer(offer);
+          render(offersContainer, option, Position.BEFOREEND);
+        });
+        this._options = newItem.offers;
       }
     });
 

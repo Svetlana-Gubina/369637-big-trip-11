@@ -1,4 +1,4 @@
-import {render, Position} from '../utils.js';
+import {render, remove, Position, hide, show} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
@@ -6,7 +6,6 @@ import PointController from './point.js';
 import moment from 'moment';
 import FormController from './form.js';
 import DestinationsModel from '../models/destinations.js';
-
 
 export default class TripController {
   constructor(container, pointsModel, addNewEventElement, api) {
@@ -25,6 +24,8 @@ export default class TripController {
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
     this._formController = new FormController(this._container, this._addNewEventElement, this._api, this._onDataChange);
+
+    this._pointControllers = [];
   }
 
   renderDefault() {
@@ -56,6 +57,7 @@ export default class TripController {
     this._cardList.getElement().innerHTML = `<ul class="trip-days">
     </ul>`;
     this._days = [];
+    this._pointControllers = [];
     this.renderDefault();
   }
 
@@ -114,6 +116,7 @@ export default class TripController {
 
   _renderPoint(point, container) {
     const pointController = new PointController(container, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
+    this._pointControllers.push(pointController);
     const destinations = new DestinationsModel();
     this._api.getDestinations().then(function (points) {
       destinations.setPoints(points);
@@ -180,20 +183,49 @@ export default class TripController {
   }
 
   filterEvents(currentFilter) {
-    //  TODO: При смене фильтра разбивка по дням сохраняется.
-
-    this._cardList.getElement().innerHTML = ``;
     const data = this._pointsModel.getPointsAll();
     switch (currentFilter) {
       case `Future`:
-        const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());
-        futureEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+        this._pointControllers.forEach((it) => it.destroy());
+        const futureEvents = data.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
+        this._pointControllers = [];
+        this._subscriptions = [];
+        for (let day of this._days) {
+          if (new Date(day.getDate()).getTime() < Date.now()) {
+            hide(day.getElement());
+          } else {
+            show(day.getElement());
+          }
+          const slots = day.getElement().querySelectorAll(`.trip-events__item`);
+          for (let point of futureEvents) {
+            let slot = Array.from(slots).find((it) => it.id === point.id);
+            if (slot) {
+              this._renderPoint(point, slot);
+            }
+          }
+        }
         let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
         this.updateTotal(futCosts);
         break;
       case `Past`:
-        const pastEvents = data.slice().filter((event) => event.eventEnd < Date.now());
-        pastEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+        this._pointControllers.forEach((it) => it.destroy());
+        const pastEvents = data.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
+        this._pointControllers = [];
+        this._subscriptions = [];
+        for (let day of this._days) {
+          if (new Date(day.getDate()).getTime() > Date.now()) {
+            hide(day.getElement());
+          } else {
+            show(day.getElement());
+          }
+          const slots = day.getElement().querySelectorAll(`.trip-events__item`);
+          for (let point of pastEvents) {
+            let slot = Array.from(slots).find((it) => it.id === point.id);
+            if (slot) {
+              this._renderPoint(point, slot);
+            }
+          }
+        }
         let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
         this.updateTotal(pastCosts);
         break;

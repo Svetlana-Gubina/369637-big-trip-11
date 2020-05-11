@@ -48,15 +48,6 @@ export const AVAILABLE_OPTIONS = new Set([
 
 export const filterNullProps = (obj) => Object.fromEntries(Object.entries(obj).filter(([key, value]) => value !== null));
 
-// export const getFormDateTime = (formData, name) => {
-//   formData = {
-//     get() {
-//       return name;
-//     }
-//   };
-//   const value = formData.get(name);
-//   return value ? moment(value).toDate() : null;
-// };
 
 export const FiltersNames = [
   {

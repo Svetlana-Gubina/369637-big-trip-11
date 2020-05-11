@@ -34,8 +34,6 @@ render(tripControls, menu, Position.AFTERBEGIN);
 const filtersForm = new FiltersComponent(FiltersNames);
 render(tripControls, filtersForm, Position.BEFOREEND);
 
-// /* === STATISTICS === */
-
 const statisticsComponent = new Statistics({events: pointsModel});
 render(tripEvents, statisticsComponent, Position.BEFOREEND);
 statisticsComponent.hide();
