@@ -14,11 +14,11 @@ export default class PointsModel {
     return true;
   }
 
-  getpointsAll() {
+  getPointsAll() {
     return this._points;
   }
 
-  setpoints(points) {
+  setPoints(points) {
     this._points = Array.from(points);
     this._callHandlers(this._dataChangeHandlers);
   }

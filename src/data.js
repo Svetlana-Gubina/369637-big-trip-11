@@ -1,4 +1,4 @@
-import {MIN_PRICE, MAX_PRICE, AVAILABLE_EVENT_TYPES, AVAILABLE_OPTIONS, CITIES, MILLISECONDS} from './constants.js';
+import {MIN_PRICE, MAX_PRICE, AVAILABLE_EVENT_TYPES, AVAILABLE_OPTIONS} from './constants.js';
 import {getRandomOfArray, getRandomInteger, shuffle} from './utils.js';
 
 
@@ -37,13 +37,6 @@ export const formDefaultEvent = {
   },
   "is_favorite": false,
   "offers": [
-    {
-      "title": `Choose meal`,
-      "price": 180
-    }, {
-      "title": `Upgrade to comfort class`,
-      "price": 50
-    }
   ],
   "type": `transport`,
 };

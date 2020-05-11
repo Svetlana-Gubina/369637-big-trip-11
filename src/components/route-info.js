@@ -5,7 +5,7 @@ import {Position, render} from '../utils.js';
 export default class RouteInfoElement extends AbstractComponent {
   constructor({points}) {
     super();
-    this._points = points.getpointsAll();
+    this._points = points.getPointsAll();
     this._departurePlace = this._points[0].destination.name;
     this._point = this._points.length > 3 ? `...` : this._points[1].destination.name;
     this._destination = this._points[this._points.length - 1].destination.name;

@@ -1,10 +1,9 @@
-import {render, remove, Position} from '../utils.js';
+import {render, Position} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import PointController from './point.js';
 import moment from 'moment';
-import Model from '../models//model.js';
 import FormController from './form.js';
 import DestinationsModel from '../models/destinations.js';
 
@@ -29,7 +28,7 @@ export default class TripController {
   }
 
   renderDefault() {
-    const data = this._pointsModel.getpointsAll();
+    const data = this._pointsModel.getPointsAll();
     let count = 1;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
@@ -68,7 +67,7 @@ export default class TripController {
   }
 
   renderTotalCount() {
-    const data = this._pointsModel.getpointsAll();
+    const data = this._pointsModel.getPointsAll();
     let costs = data.reduce((sum, current) => sum + current.cost, 0);
     this.updateTotal(costs);
   }
@@ -81,7 +80,7 @@ export default class TripController {
 
   _onSortTypeChange(sortType) {
     this._cardList.getElement().innerHTML = ``;
-    const data = this._pointsModel.getpointsAll();
+    const data = this._pointsModel.getPointsAll();
     switch (sortType) {
       case `time`:
         const sortedByTimeEvents = data.slice().sort((a, b) => (b.eventEnd - b.eventStart) - (a.eventEnd - a.eventStart));
@@ -184,7 +183,7 @@ export default class TripController {
     //  TODO: При смене фильтра разбивка по дням сохраняется.
 
     this._cardList.getElement().innerHTML = ``;
-    const data = this._pointsModel.getpointsAll();
+    const data = this._pointsModel.getPointsAll();
     switch (currentFilter) {
       case `Future`:
         const futureEvents = data.slice().filter((event) => event.eventStart > Date.now());

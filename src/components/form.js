@@ -267,6 +267,8 @@ export default class Form extends AbstractSmartComponent {
       evt.preventDefault();
       const destinationPoint = getNamedElement(this._destinations, evt.target.value);
       this._destination = destinationPoint;
+      this._description = this._destination.description;
+      this._photos = destinationPoint.pictures;
     });
 
     this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, (evt) => {

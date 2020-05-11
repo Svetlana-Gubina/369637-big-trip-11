@@ -281,6 +281,8 @@ export default class EditEvent extends AbstractSmartComponent {
       const destinationPoint = getNamedElement(this._destinations, evt.target.value);
       this._destination = destinationPoint;
       destinationField.innerHTML = this._destination.description;
+      this._description = this._destination.description;
+      this._photos = destinationPoint.pictures;
       photosContainer.innerHTML = `${this._photos.map((photo) => (`
       <img class="event__photo" src="${photo.src}" alt="Event photo">`
       .trim())).join(``)}`;

@@ -12,8 +12,6 @@ const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 
-/* === RENDER COMPONENTS ===  */
-
 const tripInfo = document.querySelector(`.trip-main`);
 const tripEvents = document.querySelector(`.trip-events`);
 const addNewEventElement = document.querySelector(`.trip-main__event-add-btn`);
@@ -22,7 +20,7 @@ const pointsModel = new PointsModel();
 const controller = new TripController(tripEvents, pointsModel, addNewEventElement, api);
 
 api.getData().then(function (points) {
-  pointsModel.setpoints(points);
+  pointsModel.setPoints(points);
   const routeInfo = new RouteInfoElement({points: pointsModel});
   routeInfo.render(tripInfo);
   controller.render(routeInfo);
@@ -61,15 +59,12 @@ headerCont.addEventListener(`click`, (evt) => {
         break;
     }
   } else if (evt.target.tagName === `BUTTON`) {
-    /* === ADD NEW EVENT ===  */
     statisticsComponent.hide();
     controller.show();
     filtersForm.show();
     controller.addEvent(addNewEventElement);
   }
 });
-
-/* === FILTER === */
 
 filtersForm.getElement().addEventListener(`click`, (evt) => {
   evt.preventDefault();

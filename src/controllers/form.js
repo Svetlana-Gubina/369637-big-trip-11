@@ -1,8 +1,5 @@
 import {render, Position} from '../utils.js';
 import Form from '../components/form.js';
-// import {AVAILABLE_EVENT_TYPES, filterNullProps} from '../constants.js';
-// import {check, uncheck} from '../utils.js';
-import {getSelectedOptions} from '../constants.js';
 import Offers from '../models//offers.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;

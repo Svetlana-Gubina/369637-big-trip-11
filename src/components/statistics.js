@@ -33,7 +33,7 @@ export default class Statistics extends AbstractSmartComponent {
     const timeCtx = canvasTime.getContext(`2d`);
 
     const getMoneyData = (eventType) => {
-      return this._events.getpointsAll().reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
+      return this._events.getPointsAll().reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
     };
     const rideMoneyData = getMoneyData(`Taxi`) + getMoneyData(`bus`) + getMoneyData(`transport`) + getMoneyData(`train`);
     const moneyChart = new Chart(moneyCtx, {
@@ -153,7 +153,7 @@ export default class Statistics extends AbstractSmartComponent {
     });
 
     const getTransportData = (eventType) => {
-      return this._events.getpointsAll().filter((evt) => evt.eventType === eventType).length;
+      return this._events.getPointsAll().filter((evt) => evt.eventType === eventType).length;
     };
     const rideData = getTransportData(`taxi`) + getTransportData(`bus`) + getTransportData(`transport`) + getTransportData(`train`);
 
@@ -272,7 +272,7 @@ export default class Statistics extends AbstractSmartComponent {
     });
 
     const getPlaceTimeSpent = (eventType) => {
-      const hotels = this._events.getpointsAll().filter((evt) => evt.eventType === eventType);
+      const hotels = this._events.getPointsAll().filter((evt) => evt.eventType === eventType);
       let placeDurations = [];
       for (const evt of hotels) {
         placeDurations.push(moment.duration(evt.eventEnd - evt.eventStart).hours());
@@ -281,7 +281,7 @@ export default class Statistics extends AbstractSmartComponent {
     };
 
     const getCityTimeSpent = (city) => {
-      const hotels = this._events.getpointsAll().filter((evt) => evt.city === city);
+      const hotels = this._events.getPointsAll().filter((evt) => evt.city === city);
       let cityDurations = [];
       for (const evt of hotels) {
         cityDurations.push(moment.duration(evt.eventEnd - evt.eventStart).hours());
