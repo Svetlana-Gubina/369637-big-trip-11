@@ -13,22 +13,24 @@ export default class FormController {
     this._addNewEventElement = addNewEventElement;
     this._api = api;
     this._onDataChange = onDataChange;
-    this._form = new Form(addNewEventElement, api);
+    this._form = null;
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
   destroy() {
-    this._form.remove();
+    if (this._form) {
+      this._form.remove();
+    }
     document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
-  render() {
+  render({points}) {
+    this._form = new Form(this._addNewEventElement, this._api, {points});
     document.addEventListener(`keydown`, this._onEscKeyDown);
 
     this._form.setSubmitHandler((evt) => {
       evt.preventDefault();
       const formEntry = this._form.parseFormData();
-      // console.log(formEntry.toRAW());
       this._form.setData({
         saveButtonLabel: `Saving...`,
       });

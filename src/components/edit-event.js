@@ -15,12 +15,16 @@ export default class EditEvent extends AbstractSmartComponent {
   constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}, api) {
     super();
     this._destinations = points.getPointsAll();
+
     this._destination = destination;
+    this._city = destination.name;
+    this._photos = destination.pictures;
+    this._description = destination.description;
+
     this._event = {eventType, destination, cost, options, eventStart, eventEnd, isFavorite};
     this._api = api;
     this._eventType = eventType;
     this._prep = getPrep(this._eventType);
-    this._city = destination.name;
     this._cost = cost;
     this._options = options;
     this._eventStart = eventStart;
@@ -32,8 +36,6 @@ export default class EditEvent extends AbstractSmartComponent {
     this._hoursEnd = new Date(this._eventEnd).getHours();
     this._minutesStart = new Date(this._eventStart).getMinutes();
     this._minutesEnd = new Date(this._eventEnd).getMinutes();
-    this._photos = destination.pictures;
-    this._description = destination.description;
     this._isFavorite = isFavorite;
     this._buttonLabels = DefaultLabels;
     this._subscribeOnEvents();
@@ -274,12 +276,14 @@ export default class EditEvent extends AbstractSmartComponent {
     this.getElement()
     .querySelector(`.event__field-group--destination`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
-      this._city = evt.target.value;
-
+      const photosContainer = this.getElement().querySelector(`.event__photos-tape`);
+      const destinationField = this.getElement().querySelector(`.event__destination-description`);
       const destinationPoint = getNamedElement(this._destinations, evt.target.value);
-      this._description = destinationPoint.description;
-      this._photos = destinationPoint.pictures;
-      this.rerender();
+      this._destination = destinationPoint;
+      destinationField.innerHTML = this._destination.description;
+      photosContainer.innerHTML = `${this._photos.map((photo) => (`
+      <img class="event__photo" src="${photo.src}" alt="Event photo">`
+      .trim())).join(``)}`;
     });
 
     this.getElement()

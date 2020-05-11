@@ -130,7 +130,7 @@ export default class TripController {
   _onDataChange(controller, actionType, oldData, newData) {
     switch (actionType) {
       case `create`:
-        this._api.createEvent(event)
+        this._api.createEvent(newData)
         .then((event) => {
           const isSuccess = this._pointsModel.addEvent(event);
           if (isSuccess) {
@@ -173,8 +173,11 @@ export default class TripController {
   addEvent() {
     this.rerender();
     const formController = this._formController;
-    formController.render();
-    this._onChangeView();
+    const destinations = new DestinationsModel();
+    this._api.getDestinations().then(function (points) {
+      destinations.setPoints(points);
+      formController.render({points: destinations});
+    });
   }
 
   filterEvents(currentFilter) {

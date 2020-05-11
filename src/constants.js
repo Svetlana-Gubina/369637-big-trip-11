@@ -83,3 +83,12 @@ export const getNamedElement = (list, name) => {
   const index = list.findIndex((it) => it[`name`] === name);
   return list[index];
 };
+
+export const filteredArray = (arr, item) => {
+  let index = arr.findIndex((it) => it === item);
+  let newArr = arr.slice();
+  if (index >= 0) {
+    newArr.splice(index, 1);
+  }
+  return newArr;
+};
