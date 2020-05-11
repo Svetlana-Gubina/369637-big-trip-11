@@ -1,16 +1,15 @@
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions, getNamedElement} from '../constants.js';
-import {check, uncheck} from '../utils.js';
+import Offer from './offer.js';
+import Model from '../models//model.js';
+import Select from './select.js';
+import DestinationSection from './destinationSection.js';
+import {formDefaultEvent} from '../data.js';
+import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions, getNamedElement, getPrep} from '../constants.js';
+import {check, uncheck, render, Position} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
-import Offer from './offer.js';
-import {formDefaultEvent} from '../data.js';
 import DOMPurify from 'dompurify';
-import Model from '../models//model.js';
-import Select from './select.js';
-import {getPrep} from './card.js';
-import {render, Position} from '../utils.js';
 
 export default class Form extends AbstractSmartComponent {
   constructor(addNewEventElement, api, {points}) {
@@ -257,8 +256,8 @@ export default class Form extends AbstractSmartComponent {
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
 
         const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
-        this._options = newItem.offers;
         this.renderOptions(evt, newItem.offers);
+        this._options = newItem.offers;
       }
     });
 
@@ -269,6 +268,13 @@ export default class Form extends AbstractSmartComponent {
       this._destination = destinationPoint;
       this._description = this._destination.description;
       this._photos = destinationPoint.pictures;
+
+      const section = new DestinationSection(destinationPoint);
+      const details = this.getElement().querySelector(`.event__details`);
+      if (details.classList.contains(`visually-hidden`)) {
+        details.classList.remove(`visually-hidden`);
+      }
+      render(details, section, Position.BEFOREEND);
     });
 
     this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, (evt) => {

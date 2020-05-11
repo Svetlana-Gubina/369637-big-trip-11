@@ -8,6 +8,8 @@ export default class Statistics extends AbstractSmartComponent {
     super();
     this._events = events;
     this._moneyChart = null;
+    this._transportChart = null;
+    this._timeChart = null;
   }
 
   show() {
@@ -36,7 +38,7 @@ export default class Statistics extends AbstractSmartComponent {
       return this._events.getPointsAll().reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
     };
     const rideMoneyData = getMoneyData(`Taxi`) + getMoneyData(`bus`) + getMoneyData(`transport`) + getMoneyData(`train`);
-    const moneyChart = new Chart(moneyCtx, {
+    this._moneyChart = new Chart(moneyCtx, {
       plugins: [ChartDataLabels],
       type: `horizontalBar`,
       data: {
@@ -157,7 +159,7 @@ export default class Statistics extends AbstractSmartComponent {
     };
     const rideData = getTransportData(`taxi`) + getTransportData(`bus`) + getTransportData(`transport`) + getTransportData(`train`);
 
-    const transportChart = new Chart(transportCtx, {
+    this._transportChart = new Chart(transportCtx, {
       plugins: [ChartDataLabels],
       type: `horizontalBar`,
       data: {
@@ -289,7 +291,7 @@ export default class Statistics extends AbstractSmartComponent {
       return cityDurations.reduce((sum, current) => sum + current, 0);
     };
 
-    const timeChart = new Chart(timeCtx, {
+    this._timeChart = new Chart(timeCtx, {
       plugins: [ChartDataLabels],
       type: `horizontalBar`,
       data: {

@@ -1,12 +1,12 @@
 import Menu from './components/menu.js';
 import RouteInfoElement from './components/route-info.js';
-import {Position, render, check} from './utils.js';
 import FiltersComponent from './components/filter.js';
+import Statistics from "./components/statistics.js";
 import TripController from './controllers/event.js';
 import API from './api.js';
 import PointsModel from './models/points.js';
+import {Position, render, check} from './utils.js';
 import {FiltersNames} from './constants.js';
-import Statistics from "./components/statistics.js";
 
 const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
@@ -38,6 +38,8 @@ const statisticsComponent = new Statistics({events: pointsModel});
 render(tripEvents, statisticsComponent, Position.BEFOREEND);
 statisticsComponent.hide();
 
+// const addButton = document.querySelector(``);
+
 const headerCont = document.querySelector(`.page-header__container`);
 headerCont.addEventListener(`click`, (evt) => {
   evt.preventDefault();
@@ -57,6 +59,7 @@ headerCont.addEventListener(`click`, (evt) => {
         break;
     }
   } else if (evt.target.tagName === `BUTTON`) {
+    evt.target.disabled = true;
     statisticsComponent.hide();
     controller.show();
     filtersForm.show();

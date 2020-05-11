@@ -1,6 +1,6 @@
 import {render, Position} from '../utils.js';
 import Form from '../components/form.js';
-import Offers from '../models//offers.js';
+import AbstractModel from '../models/abstractModel.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -24,7 +24,7 @@ export default class FormController {
   render({points}) {
     const form = new Form(this._addNewEventElement, this._api, {points});
     this._form = form;
-    const offers = new Offers();
+    const offers = new AbstractModel();
     this._api.getOffers().then(function (list) {
       offers.setPoints(list);
       form.setOptionsList({points: offers});
@@ -48,7 +48,6 @@ export default class FormController {
     });
 
     render(this._container, this._form, Position.AFTERBEGIN);
-    this._addNewEventElement.disabled = true;
   }
 
   shake() {

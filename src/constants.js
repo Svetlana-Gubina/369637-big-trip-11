@@ -1,53 +1,6 @@
-import {getRandomBoolean} from './utils.js';
 export const MILLISECONDS = 86400000;
 
-
-export const MIN_PRICE = 20;
-export const MAX_PRICE = 1000;
 export const CITIES = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint Petersburg`];
-
-export const AVAILABLE_EVENT_TYPES = [
-  `bus`,
-  `drive`,
-  `flight`,
-  `ship`,
-  `train`,
-  `transport`,
-  `taxi`,
-  `check-in`,
-  `sightseeing`,
-  `restaurant`,
-];
-
-export const AVAILABLE_OPTIONS = new Set([
-  {
-    title: `Add luggage`,
-    shortTitle: `luggage`,
-    price: 10,
-    isAdded: getRandomBoolean(),
-  },
-  {
-    title: `Switch to comfort class`,
-    shortTitle: `comfort`,
-    price: 150,
-    isAdded: getRandomBoolean(),
-  },
-  {
-    title: ` Add meal`,
-    shortTitle: `meal`,
-    price: 2,
-    isAdded: getRandomBoolean(),
-  },
-  {
-    title: `Choose seats`,
-    shortTitle: `seats`,
-    price: 9,
-    isAdded: getRandomBoolean(),
-  }
-]);
-
-export const filterNullProps = (obj) => Object.fromEntries(Object.entries(obj).filter(([key, value]) => value !== null));
-
 
 export const FiltersNames = [
   {
@@ -83,4 +36,27 @@ export const filteredArray = (arr, item) => {
     newArr.splice(index, 1);
   }
   return newArr;
+};
+
+export const AVAILABLE_EVENT_TYPES = [
+  `bus`,
+  `drive`,
+  `flight`,
+  `ship`,
+  `train`,
+  `transport`,
+  `taxi`,
+  `check-in`,
+  `sightseeing`,
+  `restaurant`,
+];
+
+export const getPrep = (type) => {
+  let prep;
+  if (AVAILABLE_EVENT_TYPES.slice(0, 7).includes(type)) {
+    prep = ` to `;
+  } else {
+    prep = ` in `;
+  }
+  return prep;
 };

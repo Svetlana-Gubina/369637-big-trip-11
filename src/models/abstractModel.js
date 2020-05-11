@@ -1,4 +1,4 @@
-export default class Offers {
+export default class AbstractModel {
   constructor() {
     this._points = [];
     this._dataChangeHandlers = [];

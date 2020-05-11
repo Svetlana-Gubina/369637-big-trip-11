@@ -1,16 +1,24 @@
 import AbstractSmartComponent from './abstract-smart-component.js';
-import {check, uncheck} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions, getNamedElement} from '../constants.js';
+import Select from './select.js';
+import Model from '../models//model.js';
+import Offer from './offer.js';
+import {check, uncheck, render, Position} from '../utils.js';
+import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions, getNamedElement, getPrep} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
-import {renderOption} from './option.js';
-import Select from './select.js';
-import {getPrep} from './card.js';
-import Model from '../models//model.js';
 import DOMPurify from 'dompurify';
-import Offer from './offer.js';
-import {render, Position} from '../utils.js';
+
+const createOptionsMarkup = (options) => {
+  return options
+    .map((option) => {
+      const offer = new Offer(option);
+      return (
+        offer.getTemplate()
+      );
+    })
+    .join(`\n`);
+};
 
 export default class EditEvent extends AbstractSmartComponent {
   constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}, api) {
@@ -130,7 +138,7 @@ export default class EditEvent extends AbstractSmartComponent {
               <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
               <div class="event__available-offers">
-              ${this._options.map((option) => renderOption(option)).join(``)}
+              ${createOptionsMarkup(this._options)}
               </div>
             </section>
 
@@ -277,11 +285,12 @@ export default class EditEvent extends AbstractSmartComponent {
         offersContainer.innerHTML = ``;
 
         const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
+        this._options = [];
+        this._options.push(...newItem.offers);
         newItem.offers.forEach(function (offer) {
           const option = new Offer(offer);
           render(offersContainer, option, Position.BEFOREEND);
         });
-        this._options = newItem.offers;
       }
     });
 

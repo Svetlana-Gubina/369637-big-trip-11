@@ -1,7 +1,7 @@
 import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import Offers from '../models//offers.js';
+import AbstractModel from '../models/abstractModel.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -29,7 +29,7 @@ export default class PointController {
     const pointEdit = new EditEvent(point, {points}, this._api);
     this._pointEdit = pointEdit;
 
-    const offers = new Offers();
+    const offers = new AbstractModel();
     this._api.getOffers().then(function (list) {
       offers.setPoints(list);
       pointEdit.setOptionsList({points: offers});

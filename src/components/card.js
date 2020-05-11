@@ -1,16 +1,6 @@
 import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
-import {MILLISECONDS, AVAILABLE_EVENT_TYPES} from '../constants.js';
-
-export const getPrep = (type) => {
-  let prep;
-  if (AVAILABLE_EVENT_TYPES.slice(0, 7).includes(type)) {
-    prep = ` to `;
-  } else {
-    prep = ` in `;
-  }
-  return prep;
-};
+import {MILLISECONDS, getPrep} from '../constants.js';
 
 const getDays = (duration) => {
   if (duration > MILLISECONDS) {

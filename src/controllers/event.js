@@ -1,11 +1,11 @@
-import {render, remove, Position, hide, show} from '../utils.js';
+import {render, Position} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import PointController from './point.js';
 import moment from 'moment';
 import FormController from './form.js';
-import DestinationsModel from '../models/destinations.js';
+import AbstractModel from '../models/abstractModel.js';
 
 export default class TripController {
   constructor(container, pointsModel, addNewEventElement, api) {
@@ -117,7 +117,7 @@ export default class TripController {
   _renderPoint(point, container) {
     const pointController = new PointController(container, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
     this._pointControllers.push(pointController);
-    const destinations = new DestinationsModel();
+    const destinations = new AbstractModel();
     this._api.getDestinations().then(function (points) {
       destinations.setPoints(points);
       pointController.render(point, {points: destinations});
@@ -175,7 +175,7 @@ export default class TripController {
   addEvent() {
     this.rerender();
     const formController = this._formController;
-    const destinations = new DestinationsModel();
+    const destinations = new AbstractModel();
     this._api.getDestinations().then(function (points) {
       destinations.setPoints(points);
       formController.render({points: destinations});
@@ -192,9 +192,9 @@ export default class TripController {
         this._subscriptions = [];
         for (let day of this._days) {
           if (new Date(day.getDate()).getTime() < Date.now()) {
-            hide(day.getElement());
+            day.hide();
           } else {
-            show(day.getElement());
+            day.show();
           }
           const slots = day.getElement().querySelectorAll(`.trip-events__item`);
           for (let point of futureEvents) {
@@ -214,9 +214,9 @@ export default class TripController {
         this._subscriptions = [];
         for (let day of this._days) {
           if (new Date(day.getDate()).getTime() > Date.now()) {
-            hide(day.getElement());
+            day.hide();
           } else {
-            show(day.getElement());
+            day.show();
           }
           const slots = day.getElement().querySelectorAll(`.trip-events__item`);
           for (let point of pastEvents) {
