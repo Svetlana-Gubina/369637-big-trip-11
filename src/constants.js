@@ -75,8 +75,9 @@ export const DefaultLabels = {
   saveButtonLabel: `Save`,
 };
 
+
 export const getSelectedOptions = (options, formData) => {
-  return options.map((option) => option.title).reduce((acc, option) => formData.get(`event-offer-${option}`) ? [...acc, option] : acc, []);
+  return options.reduce((acc, option) => formData.get(`event-offer-${option.title}`) ? [...acc, option] : acc, []);
 };
 
 export const getNamedElement = (list, name) => {

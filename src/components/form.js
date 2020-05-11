@@ -4,12 +4,13 @@ import {check, uncheck} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
-import Offers from './offers.js';
+import Offer from './offer.js';
 import {formDefaultEvent} from '../data.js';
 import DOMPurify from 'dompurify';
 import Model from '../models//model.js';
 import Select from './select.js';
 import {getPrep} from './card.js';
+import {render, Position} from '../utils.js';
 
 export default class Form extends AbstractSmartComponent {
   constructor(addNewEventElement, api, {points}) {
@@ -31,6 +32,7 @@ export default class Form extends AbstractSmartComponent {
     this._minutesEnd = new Date(this._eventEnd).getMinutes();
     this._cost = formDefaultEvent[`base_price`];
     this._options = formDefaultEvent[`offers`];
+    this._optionsList = [];
 
     this._flatpickr = null;
     this._buttonLabels = DefaultLabels;
@@ -123,6 +125,7 @@ export default class Form extends AbstractSmartComponent {
   parseFormData() {
     const formData = this.getData();
     return new Model({
+      "id": ``,
       "type": formData.get(`event-type`) || this._eventType,
       "date_from": formData.get(`event-start-time`),
       "date_to": formData.get(`event-end-time`),
@@ -252,7 +255,10 @@ export default class Form extends AbstractSmartComponent {
         const prep = getPrep(type);
         this._eventType = evt.target.textContent.toLowerCase();
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
-        this._api.getOffers().then((list) => this.renderOptions(evt, list));
+
+        const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
+        this._options = newItem.offers;
+        this.renderOptions(evt, newItem.offers);
       }
     });
 
@@ -269,12 +275,19 @@ export default class Form extends AbstractSmartComponent {
     });
   }
 
+  setOptionsList({points}) {
+    this._optionsList = points.getPointsAll();
+  }
+
   renderOptions(evt, list) {
     if (list.length > 0) {
       this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
       const offersContainer = this.getElement().querySelector(`.event__available-offers`);
       offersContainer.innerHTML = ``;
-      new Offers(list).render(offersContainer, evt.target.textContent.toLowerCase());
+      list.forEach(function (offer) {
+        const option = new Offer(offer);
+        render(offersContainer, option, Position.BEFOREEND);
+      });
     }
   }
 }

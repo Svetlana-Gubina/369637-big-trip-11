@@ -2,8 +2,8 @@ import {render, Position} from '../utils.js';
 import Form from '../components/form.js';
 // import {AVAILABLE_EVENT_TYPES, filterNullProps} from '../constants.js';
 // import {check, uncheck} from '../utils.js';
-// import {getSelectedOptions} from '../constants.js';
-// import Model from '../models//model.js';
+import {getSelectedOptions} from '../constants.js';
+import Offers from '../models//offers.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -25,7 +25,13 @@ export default class FormController {
   }
 
   render({points}) {
-    this._form = new Form(this._addNewEventElement, this._api, {points});
+    const form = new Form(this._addNewEventElement, this._api, {points});
+    this._form = form;
+    const offers = new Offers();
+    this._api.getOffers().then(function (list) {
+      offers.setPoints(list);
+      form.setOptionsList({points: offers});
+    });
     document.addEventListener(`keydown`, this._onEscKeyDown);
 
     this._form.setSubmitHandler((evt) => {
@@ -51,7 +57,7 @@ export default class FormController {
   shake() {
     this._form.getElement().querySelector(`.event`).style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
     setTimeout(() => {
-      this.getElement().style.animation = ``;
+      this._form.getElement().style.animation = ``;
     }, SHAKE_ANIMATION_TIMEOUT);
   }
 

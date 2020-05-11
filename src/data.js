@@ -36,6 +36,14 @@ export const formDefaultEvent = {
     ]
   },
   "is_favorite": false,
-  "offers": [],
+  "offers": [
+    {
+      "title": `Choose meal`,
+      "price": 180
+    }, {
+      "title": `Upgrade to comfort class`,
+      "price": 50
+    }
+  ],
   "type": `transport`,
 };
