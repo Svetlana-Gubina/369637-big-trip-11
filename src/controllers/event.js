@@ -118,7 +118,6 @@ export default class TripController {
     const destinations = new DestinationsModel();
     this._api.getDestinations().then(function (points) {
       destinations.setPoints(points);
-      // console.log(destinations.getPointsAll()[0]);
       pointController.render(point, {points: destinations});
     });
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));

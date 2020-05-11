@@ -186,14 +186,18 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this._flatpickr = flatpickr(start, {
       enableTime: true,
-      dateFormat: `d/m/Y H:m`,
+      dateFormat: `Z`,
+      altInput: true,
+      altFormat: `d/m/Y H:m`,
       maxDate: `01.01.2022 00:00`,
       defaultDate: this._eventStart,
     });
 
     this._flatpickr = flatpickr(end, {
       enableTime: true,
-      dateFormat: `d/m/Y H:m`,
+      dateFormat: `Z`,
+      altInput: true,
+      altFormat: `d/m/Y H:m`,
       minDate: this._eventStart,
       maxDate: `01.01.2022 00:00`,
       defaultDate: this._eventEnd,

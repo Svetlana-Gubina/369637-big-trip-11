@@ -24,7 +24,6 @@ export default class PointController {
     this._pointEdit.setSubmitHandler((evt) => {
       evt.preventDefault();
       const entry = this._pointEdit.parseFormData();
-
       this._pointEdit.setData({
         saveButtonLabel: `Saving...`,
       });
