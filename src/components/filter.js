@@ -8,7 +8,7 @@ export default class FiltersComponent extends AbstractComponent {
   }
 
   getTemplate() {
-    const filtersMarkup = this._filters.map((it) => createFilterMarkup(it, it.checked)).join(`\n`);
+    const filtersMarkup = this._filters.map((filter) => createFilterMarkup(filter, filter.checked)).join(`\n`);
     return `<form class="trip-filters" action="#" method="get">
     ${filtersMarkup}
     <button class="visually-hidden" type="submit">Accept filter</button>

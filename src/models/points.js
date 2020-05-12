@@ -2,7 +2,7 @@ import AbstractModel from './abstractModel.js';
 
 export default class PointsModel extends AbstractModel {
   removeEvent(id) {
-    const index = this._points.findIndex((it) => it.id === id);
+    const index = this._points.findIndex((item) => item.id === id);
     if (index === -1) {
       return false;
     }
@@ -12,7 +12,7 @@ export default class PointsModel extends AbstractModel {
   }
 
   updateEvent(id, event) {
-    const index = this._points.findIndex((it) => it.id === id);
+    const index = this._points.findIndex((item) => item.id === id);
     if (index === -1) {
       return false;
     }

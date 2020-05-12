@@ -19,19 +19,22 @@ export const DefaultLabels = {
   saveButtonLabel: `Save`,
 };
 
+export const getViewSelectedOptions = (options) => {
+  return options.reduce((accumulator, option) => option.isAdded ? [...accumulator, option] : accumulator, []);
+};
 
 export const getSelectedOptions = (options, formData) => {
-  return options.reduce((acc, option) => formData.get(`event-offer-${option.title}`) ? [...acc, option] : acc, []);
+  return options.reduce((accumulator, option) => formData.get(`event-offer-${option.title}`) ? [...accumulator, option] : accumulator, []);
 };
 
 export const getNamedElement = (list, name) => {
-  const index = list.findIndex((it) => it[`name`] === name);
+  const index = list.findIndex((item) => item[`name`] === name);
   return list[index];
 };
 
-export const filteredArray = (arr, item) => {
-  let index = arr.findIndex((it) => it === item);
-  let newArr = arr.slice();
+export const getfilteredArray = (array, item) => {
+  let index = array.findIndex((arrayItem) => arrayItem === item);
+  let newArr = array.slice();
   if (index >= 0) {
     newArr.splice(index, 1);
   }
@@ -59,4 +62,14 @@ export const getPrep = (type) => {
     prep = ` in `;
   }
   return prep;
+};
+
+export const isIncludes = (array1, array2) => {
+  const result = [];
+  array2.forEach(function (item) {
+    if (array1.includes(item)) {
+      result.push(item);
+    }
+  });
+  return result.length > 0 ? true : false;
 };

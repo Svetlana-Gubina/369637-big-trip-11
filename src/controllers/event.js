@@ -6,6 +6,7 @@ import PointController from './point.js';
 import moment from 'moment';
 import FormController from './form.js';
 import AbstractModel from '../models/abstractModel.js';
+import {isIncludes} from '../constants.js';
 
 export default class TripController {
   constructor(container, pointsModel, addNewEventElement, api) {
@@ -34,7 +35,7 @@ export default class TripController {
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
       let nextDay = new Day(count, start, item.eventStart);
-      let dayIndex = this._days.findIndex((it) => it._date === start);
+      let dayIndex = this._days.findIndex((dayItem) => dayItem.getDateNumber() === start);
       if (dayIndex !== -1) {
         this._days[dayIndex]._points.push(item);
       } else {
@@ -46,7 +47,7 @@ export default class TripController {
     for (let day of this._days) {
       const slots = day.getElement().querySelectorAll(`.trip-events__item`);
       for (let point of day._points) {
-        let slot = Array.from(slots).find((it) => it.id === point.id);
+        let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
         this._renderPoint(point, slot);
       }
       render(this._cardList.getElement().querySelector(`.trip-days`), day, Position.BEFOREEND);
@@ -61,8 +62,8 @@ export default class TripController {
     this.renderDefault();
   }
 
-  render(routeInfo) {
-    this._totalField = routeInfo.getElement(). querySelector(`.trip-info__cost-value`);
+  render(totalField) {
+    this._totalField = totalField;
     render(this._container, this._sortComponent, Position.AFTERBEGIN);
     render(this._container, this._cardList, Position.BEFOREEND);
     this.renderDefault();
@@ -74,9 +75,9 @@ export default class TripController {
     this.updateTotal(costs);
   }
 
-  updateTotal(num) {
+  updateTotal(number) {
     let total = 0;
-    total = total + num;
+    total = total + number;
     this._totalField.innerHTML = total;
   }
 
@@ -126,7 +127,7 @@ export default class TripController {
   }
 
   _onChangeView() {
-    this._subscriptions.forEach((it) => it());
+    this._subscriptions.forEach((item) => item());
   }
 
   _onDataChange(controller, actionType, oldData, newData) {
@@ -186,19 +187,19 @@ export default class TripController {
     const data = this._pointsModel.getPointsAll();
     switch (currentFilter) {
       case `Future`:
-        this._pointControllers.forEach((it) => it.destroy());
+        this._pointControllers.forEach((pointController) => pointController.destroy());
         const futureEvents = data.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
         this._pointControllers = [];
         this._subscriptions = [];
         for (let day of this._days) {
-          if (new Date(day.getDate()).getTime() < Date.now()) {
+          if (new Date(day.getDate()).getTime() < Date.now() || !isIncludes(futureEvents, day.getPoints())) {
             day.hide();
           } else {
             day.show();
           }
           const slots = day.getElement().querySelectorAll(`.trip-events__item`);
           for (let point of futureEvents) {
-            let slot = Array.from(slots).find((it) => it.id === point.id);
+            let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
             if (slot) {
               this._renderPoint(point, slot);
             }
@@ -208,19 +209,19 @@ export default class TripController {
         this.updateTotal(futCosts);
         break;
       case `Past`:
-        this._pointControllers.forEach((it) => it.destroy());
+        this._pointControllers.forEach((pointController) => pointController.destroy());
         const pastEvents = data.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
         this._pointControllers = [];
         this._subscriptions = [];
         for (let day of this._days) {
-          if (new Date(day.getDate()).getTime() > Date.now()) {
+          if (new Date(day.getDate()).getTime() > Date.now() || !isIncludes(pastEvents, day.getPoints())) {
             day.hide();
           } else {
             day.show();
           }
           const slots = day.getElement().querySelectorAll(`.trip-events__item`);
           for (let point of pastEvents) {
-            let slot = Array.from(slots).find((it) => it.id === point.id);
+            let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
             if (slot) {
               this._renderPoint(point, slot);
             }

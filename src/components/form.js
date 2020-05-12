@@ -214,7 +214,6 @@ export default class Form extends AbstractSmartComponent {
       dateFormat: `Z`,
       altInput: true,
       altFormat: `d/m/Y H:m`,
-      maxDate: `01.01.2022 00:00`,
       defaultDate: this._eventStart,
     });
 
@@ -224,7 +223,6 @@ export default class Form extends AbstractSmartComponent {
       altInput: true,
       altFormat: `d/m/Y H:m`,
       minDate: this._eventStart,
-      maxDate: `01.01.2022 00:00`,
       defaultDate: this._eventEnd,
     });
   }
@@ -255,8 +253,8 @@ export default class Form extends AbstractSmartComponent {
         this._eventType = evt.target.textContent.toLowerCase();
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
 
-        const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
-        this.renderOptions(evt, newItem.offers);
+        const newItem = this._optionsList.find((option) => option.type === evt.target.textContent);
+        this.renderOptions(newItem.offers);
         this._options = newItem.offers;
       }
     });
@@ -287,7 +285,7 @@ export default class Form extends AbstractSmartComponent {
     this._optionsList = points.getPointsAll();
   }
 
-  renderOptions(evt, list) {
+  renderOptions(list) {
     if (list.length > 0) {
       this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
       const offersContainer = this.getElement().querySelector(`.event__available-offers`);

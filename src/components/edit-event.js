@@ -201,7 +201,6 @@ export default class EditEvent extends AbstractSmartComponent {
       dateFormat: `Z`,
       altInput: true,
       altFormat: `d/m/Y H:m`,
-      maxDate: `01.01.2022 00:00`,
       defaultDate: this._eventStart,
     });
 
@@ -211,7 +210,6 @@ export default class EditEvent extends AbstractSmartComponent {
       altInput: true,
       altFormat: `d/m/Y H:m`,
       minDate: this._eventStart,
-      maxDate: `01.01.2022 00:00`,
       defaultDate: this._eventEnd,
     });
   }

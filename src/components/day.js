@@ -1,4 +1,5 @@
 import AbstractComponent from './abstract-component.js';
+import moment from 'moment';
 
 export default class Day extends AbstractComponent {
   constructor(count, date, dateToConvert) {
@@ -13,7 +14,7 @@ export default class Day extends AbstractComponent {
     return `<li class="trip-days__item  day">
             <div class="day__info">
               <span class="day__counter">${this._count}</span>
-              <time class="day__date" datetime="2019-03-18">${new Date(this._dateToConvert).toDateString()}</time>
+              <time class="day__date" datetime="2019-03-18">${moment(this._dateToConvert).format(`MMM D`)}</time>
             </div>
             <ul class="trip-events__list">
             ${this._points.map((point) => (`
@@ -23,7 +24,15 @@ export default class Day extends AbstractComponent {
             </li>`;
   }
 
+  getDateNumber() {
+    return this._date;
+  }
+
   getDate() {
     return this._dateToConvert;
+  }
+
+  getPoints() {
+    return this._points;
   }
 }

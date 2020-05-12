@@ -1,6 +1,5 @@
 import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
-import {Position, render} from '../utils.js';
 
 export default class RouteInfoElement extends AbstractComponent {
   constructor({points}) {
@@ -20,8 +19,9 @@ export default class RouteInfoElement extends AbstractComponent {
     <div class="trip-info__main">
       <h1 class="trip-info__title">${this._departurePlace} &mdash; ${this._point} &mdash; ${this._destination}</h1>
 
-      <p class="trip-info__dates">${this._departureMonth} ${this._departureDate}&nbsp;&mdash;&nbsp;${this._returnMonth} ${this._returndate}</p>
+      <p class="trip-info__dates">${this._departureMonth} ${this._departureDate}&nbsp;&mdash;&nbsp;${this._returndate}</p>
     </div>
+
     <p class="trip-info__cost">
       Total: &euro;&nbsp;<span class="trip-info__cost-value"></span>
     </p>
@@ -29,6 +29,6 @@ export default class RouteInfoElement extends AbstractComponent {
   }
 
   render(container) {
-    render(container, this, Position.AFTERBEGIN);
+    container.insertAdjacentHTML(`afterbegin`, this.getTemplate());
   }
 }

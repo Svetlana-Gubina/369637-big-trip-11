@@ -35,7 +35,7 @@ export default class Statistics extends AbstractSmartComponent {
     const timeCtx = canvasTime.getContext(`2d`);
 
     const getMoneyData = (eventType) => {
-      return this._events.getPointsAll().reduce((acc, evt) => evt.eventType === eventType ? evt.cost : acc, 0);
+      return this._events.getPointsAll().reduce((accumulator, evt) => evt.eventType === eventType ? evt.cost : accumulator, 0);
     };
     const rideMoneyData = getMoneyData(`Taxi`) + getMoneyData(`bus`) + getMoneyData(`transport`) + getMoneyData(`train`);
     this._moneyChart = new Chart(moneyCtx, {
