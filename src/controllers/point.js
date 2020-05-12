@@ -1,34 +1,47 @@
-import {render, replace, Position} from '../utils.js';
+import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-// import Model from '../models//model.js';
+import AbstractModel from '../models/abstractModel.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class PointController {
-  constructor(container, point, onChangeView, onDataChange, list, api, formController) {
+  constructor(container, onChangeView, onDataChange, list, api, formController) {
     this._list = list;
+    this._api = api;
     this._container = container;
     this._onChangeView = onChangeView;
     this._onDataChange = onDataChange;
-    this._point = point;
-    this._eventStart = this._point.eventStart;
-    this._eventEnd = this._point.eventEnd;
-    this._pointView = new Card(point);
-    this._pointEdit = new EditEvent(point, api);
+    this._pointView = null;
+    this._pointEdit = null;
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
     this._formController = formController;
   }
 
-  init() {
+  destroy() {
+    remove(this._pointView);
+    remove(this._pointEdit);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
+  }
+
+  render(point, {points}) {
+    this._pointView = new Card(point);
+    const pointEdit = new EditEvent(point, {points}, this._api);
+    this._pointEdit = pointEdit;
+
+    const offers = new AbstractModel();
+    this._api.getOffers().then(function (list) {
+      offers.setPoints(list);
+      pointEdit.setOptionsList({points: offers});
+    });
+
     this._pointEdit.setSubmitHandler((evt) => {
       evt.preventDefault();
       const entry = this._pointEdit.parseFormData();
-
       this._pointEdit.setData({
         saveButtonLabel: `Saving...`,
       });
-      this._onDataChange(this, `update`, this._point, entry);
+      this._onDataChange(this, `update`, point, entry);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
@@ -37,7 +50,7 @@ export default class PointController {
         deleteButtonLabel: `Deleting...`,
       });
 
-      this._onDataChange(this, `delete`, this._point, null);
+      this._onDataChange(this, `delete`, point, null);
     });
 
     this._pointView.getElement()

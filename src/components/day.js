@@ -22,4 +22,8 @@ export default class Day extends AbstractComponent {
             </ul>
             </li>`;
   }
+
+  getDate() {
+    return this._dateToConvert;
+  }
 }

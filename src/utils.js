@@ -55,7 +55,7 @@ export const getRandomOfArray = (arr) => {
   return arr[Math.floor(Math.random() * arr.length)];
 };
 
-export const getRandomBoolean = () => Boolean(Math.round(Math.random()));
+// export const getRandomBoolean = () => Boolean(Math.round(Math.random()));
 
 export const replace = (newComponent, oldComponent) => {
   const parentElement = oldComponent.getElement().parentElement;
