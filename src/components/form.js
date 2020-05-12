@@ -4,7 +4,7 @@ import Model from '../models//model.js';
 import Select from './select.js';
 import DestinationSection from './destinationSection.js';
 import {formDefaultEvent} from '../data.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions, getNamedElement, getPrep} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
 import {check, uncheck, render, Position} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -135,7 +135,7 @@ export default class Form extends AbstractSmartComponent {
         "name": formData.get(`event-destination`),
         "pictures": this._photos,
       },
-      "offers": getSelectedOptions(this._options, formData) || [],
+      "offers": this._options,
     });
   }
 
@@ -229,6 +229,15 @@ export default class Form extends AbstractSmartComponent {
 
   _subscribeOnEvents() {
     this._addDatalis();
+
+    this.getElement()
+    .querySelector(`.event__available-offers`).addEventListener(`click`, (evt) => {
+      if (evt.target.tagName === `LABEL`) {
+        const title = evt.target.querySelector(`.event__offer-title`).textContent;
+        const option = this._options.find((item) => item.title === title);
+        option.isAdded = !option.isAdded;
+      }
+    });
 
     this.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
       this._eventStart = evt.target.value;

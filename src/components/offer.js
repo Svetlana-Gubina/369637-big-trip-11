@@ -6,7 +6,7 @@ export default class Offer extends AbstractComponent {
     this._title = title;
     this._price = price;
     this._isAdded = isAdded;
-    this._subscribeOnEvents();
+    // this._subscribeOnEvents();
   }
 
   getTemplate() {
@@ -20,11 +20,11 @@ export default class Offer extends AbstractComponent {
     </div>`;
   }
 
-  _subscribeOnEvents() {
-    this.getElement()
-    .querySelector(`.event__offer-checkbox`).addEventListener(`change`, (evt) => {
-      evt.preventDefault();
-      this._isAdded = !this._isAdded;
-    });
-  }
+  // _subscribeOnEvents() {
+  //   this.getElement()
+  //   .querySelector(`.event__offer-checkbox`).addEventListener(`change`, (evt) => {
+  //     evt.preventDefault();
+  //     this._isAdded = !this._isAdded;
+  //   });
+  // }
 }

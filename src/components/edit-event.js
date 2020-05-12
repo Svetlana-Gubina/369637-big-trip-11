@@ -9,17 +9,6 @@ import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import DOMPurify from 'dompurify';
 
-const createOptionsMarkup = (options) => {
-  return options
-    .map((option) => {
-      const offer = new Offer(option);
-      return (
-        offer.getTemplate()
-      );
-    })
-    .join(`\n`);
-};
-
 export default class EditEvent extends AbstractSmartComponent {
   constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}, api) {
     super();
@@ -138,7 +127,7 @@ export default class EditEvent extends AbstractSmartComponent {
               <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
               <div class="event__available-offers">
-              ${createOptionsMarkup(this._options)}
+
               </div>
             </section>
 
@@ -171,7 +160,7 @@ export default class EditEvent extends AbstractSmartComponent {
         "name": formData.get(`event-destination`),
         "pictures": this._photos,
       },
-      "offers": getSelectedOptions(this._options, formData),
+      "offers": this._options,
     });
   }
 
@@ -185,6 +174,11 @@ export default class EditEvent extends AbstractSmartComponent {
     const destinationPoint = getNamedElement(this._destinations, this._city);
     const select = new Select(destinationPoint.name, this._destinations);
     select.render(container);
+  }
+
+  _addOptionslis() {
+    const container = this.getElement().querySelector(`.event__available-offers`);
+    this._options.forEach((option) => render(container, new Offer(option), Position.BEFOREEND));
   }
 
   _applyFlatpickr() {
@@ -261,6 +255,22 @@ export default class EditEvent extends AbstractSmartComponent {
 
   _subscribeOnEvents() {
     this._addDatalis();
+    this._addOptionslis();
+
+    this.getElement()
+    .querySelector(`.event__available-offers`).addEventListener(`click`, (evt) => {
+      // evt.preventDefault();
+      if (evt.target.tagName === `LABEL`) {
+        const title = evt.target.querySelector(`.event__offer-title`).textContent;
+        const option = this._options.find((item) => item.title === title);
+        // console.log(option);
+        if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
+          option.isAdded = true;
+        } else {
+          option.isAdded = false;
+        }
+      }
+    });
 
     this.getElement()
     .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
@@ -291,6 +301,7 @@ export default class EditEvent extends AbstractSmartComponent {
         });
       }
     });
+
 
     this.getElement()
     .querySelector(`.event__field-group--destination`).addEventListener(`change`, (evt) => {
