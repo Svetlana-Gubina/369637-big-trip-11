@@ -23,10 +23,6 @@ export const getViewSelectedOptions = (options) => {
   return options.reduce((accumulator, option) => option.isAdded ? [...accumulator, option] : accumulator, []);
 };
 
-export const getSelectedOptions = (options, formData) => {
-  return options.reduce((accumulator, option) => formData.get(`event-offer-${option.title}`) ? [...accumulator, option] : accumulator, []);
-};
-
 export const getNamedElement = (list, name) => {
   const index = list.findIndex((item) => item[`name`] === name);
   return list[index];

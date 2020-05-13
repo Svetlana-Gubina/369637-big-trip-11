@@ -263,8 +263,8 @@ export default class Form extends AbstractSmartComponent {
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
 
         const newItem = this._optionsList.find((option) => option.type === evt.target.textContent);
-        this.renderOptions(newItem.offers);
         this._options = newItem.offers;
+        this.renderOptions(newItem.offers);
       }
     });
 
@@ -303,6 +303,19 @@ export default class Form extends AbstractSmartComponent {
         const option = new Offer(offer);
         render(offersContainer, option, Position.BEFOREEND);
       });
+
+      this.getElement().querySelectorAll(`.event__offer-checkbox`)
+      .forEach((checkbox) => checkbox
+      .addEventListener(`change`, (evt) => {
+        evt.preventDefault();
+        const title = evt.target.id;
+        const option = this._options.find((item) => item.title === title);
+        if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
+          option.isAdded = true;
+        } else {
+          option.isAdded = false;
+        }
+      }));
     }
   }
 }

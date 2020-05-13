@@ -3,7 +3,7 @@ import Select from './select.js';
 import Model from '../models//model.js';
 import Offer from './offer.js';
 import {check, uncheck, render, Position} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels, getSelectedOptions, getNamedElement, getPrep} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -179,6 +179,19 @@ export default class EditEvent extends AbstractSmartComponent {
   _addOptionslis() {
     const container = this.getElement().querySelector(`.event__available-offers`);
     this._options.forEach((option) => render(container, new Offer(option), Position.BEFOREEND));
+
+    this.getElement().querySelectorAll(`.event__offer-checkbox`)
+    .forEach((checkbox) => checkbox
+    .addEventListener(`change`, (evt) => {
+      evt.preventDefault();
+      const title = evt.target.id;
+      const option = this._options.find((item) => item.title === title);
+      if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
+        option.isAdded = true;
+      } else {
+        option.isAdded = false;
+      }
+    }));
   }
 
   _applyFlatpickr() {
@@ -256,21 +269,6 @@ export default class EditEvent extends AbstractSmartComponent {
   _subscribeOnEvents() {
     this._addDatalis();
     this._addOptionslis();
-
-    this.getElement()
-    .querySelector(`.event__available-offers`).addEventListener(`click`, (evt) => {
-      // evt.preventDefault();
-      if (evt.target.tagName === `LABEL`) {
-        const title = evt.target.querySelector(`.event__offer-title`).textContent;
-        const option = this._options.find((item) => item.title === title);
-        // console.log(option);
-        if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
-          option.isAdded = true;
-        } else {
-          option.isAdded = false;
-        }
-      }
-    });
 
     this.getElement()
     .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
