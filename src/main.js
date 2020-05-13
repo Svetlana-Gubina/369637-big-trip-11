@@ -6,7 +6,7 @@ import TripController from './controllers/event.js';
 import API from './api.js';
 import PointsModel from './models/points.js';
 import {Position, render, check} from './utils.js';
-import {FiltersNames} from './constants.js';
+import {FiltersNames, Tab} from './constants.js';
 
 const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
@@ -44,13 +44,13 @@ headerCont.addEventListener(`click`, (evt) => {
   evt.preventDefault();
   if (evt.target.tagName === `A`) {
     switch (evt.target.textContent) {
-      case `Table`:
+      case Tab.tableTab:
         controller.show();
         controller.showSortComponent();
         filtersForm.show();
         statisticsComponent.hide();
         break;
-      case `Stats`:
+      case Tab.statsTab:
         controller.hide();
         controller.hideSortComponent();
         filtersForm.hide();

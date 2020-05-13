@@ -1,6 +1,7 @@
 import {render, Position} from '../utils.js';
 import Form from '../components/form.js';
 import AbstractModel from '../models/abstractModel.js';
+import {ChangeLabels, Action} from '../constants.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -35,9 +36,9 @@ export default class FormController {
       evt.preventDefault();
       const formEntry = this._form.parseFormData();
       this._form.setData({
-        saveButtonLabel: `Saving...`,
+        saveButtonLabel: ChangeLabels.saveButtonLabel,
       });
-      this._onDataChange(this, `create`, null, formEntry);
+      this._onDataChange(this, Action.create, null, formEntry);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 

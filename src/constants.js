@@ -1,7 +1,5 @@
 export const MILLISECONDS = 86400000;
 
-export const CITIES = [`Amsterdam`, `Geneva`, `Chamonix`, `Saint Petersburg`];
-
 export const FiltersNames = [
   {
     name: `Everything`,
@@ -14,9 +12,31 @@ export const FiltersNames = [
   }
 ];
 
+export const Action = {
+  create: `create`,
+  update: `update`,
+  delete: `delete`,
+};
+
+export const SortType = {
+  timeType: `time`,
+  priceType: `price`,
+  defaultType: `default`,
+};
+
+export const Tab = {
+  tableTab: `Table`,
+  statsTab: `Stats`,
+};
+
 export const DefaultLabels = {
   deleteButtonLabel: `Delete`,
   saveButtonLabel: `Save`,
+};
+
+export const ChangeLabels = {
+  deleteButtonLabel: `Deleting...`,
+  saveButtonLabel: `Saving...`,
 };
 
 export const getViewSelectedOptions = (options) => {
@@ -50,9 +70,18 @@ export const AVAILABLE_EVENT_TYPES = [
   `restaurant`,
 ];
 
+const MOVE_TYPES_COUNT = 6;
+export const MOVE_EVENT_TYPES = AVAILABLE_EVENT_TYPES.slice(0, MOVE_TYPES_COUNT);
+
+const INIT_STAY_TYPES_COUNT = 7;
+const END_STAY_TYPES_COUNT = 10;
+export const STAY_EVENT_TYPES = AVAILABLE_EVENT_TYPES.slice(INIT_STAY_TYPES_COUNT, END_STAY_TYPES_COUNT);
+
+const TO_EVENT_TYPES = AVAILABLE_EVENT_TYPES.slice(0, INIT_STAY_TYPES_COUNT);
+
 export const getPrep = (type) => {
   let prep;
-  if (AVAILABLE_EVENT_TYPES.slice(0, 7).includes(type)) {
+  if (TO_EVENT_TYPES.includes(type)) {
     prep = ` to `;
   } else {
     prep = ` in `;

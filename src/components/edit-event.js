@@ -3,7 +3,7 @@ import Select from './select.js';
 import Model from '../models//model.js';
 import Offer from './offer.js';
 import {check, uncheck, render, Position} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -59,7 +59,7 @@ export default class EditEvent extends AbstractSmartComponent {
                     <fieldset class="event__type-group">
                       <legend class="visually-hidden">Transfer</legend>
 
-                      ${AVAILABLE_EVENT_TYPES.slice(0, 6).map((type) => (`
+                      ${MOVE_EVENT_TYPES.map((type) => (`
                         <div class="event__type-item">
                           <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
                           <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
@@ -69,7 +69,7 @@ export default class EditEvent extends AbstractSmartComponent {
                     <fieldset class="event__type-group">
                       <legend class="visually-hidden">Activity</legend>
 
-                      ${AVAILABLE_EVENT_TYPES.slice(7, 10).map((type) => (`
+                      ${STAY_EVENT_TYPES.map((type) => (`
                       <div class="event__type-item">
                         <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
                         <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>

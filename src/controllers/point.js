@@ -2,6 +2,7 @@ import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
 import AbstractModel from '../models/abstractModel.js';
+import {DefaultLabels, ChangeLabels, Action} from '../constants.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
@@ -39,18 +40,18 @@ export default class PointController {
       evt.preventDefault();
       const entry = this._pointEdit.parseFormData();
       this._pointEdit.setData({
-        saveButtonLabel: `Saving...`,
+        saveButtonLabel: ChangeLabels.saveButtonLabel,
       });
-      this._onDataChange(this, `update`, point, entry);
+      this._onDataChange(this, Action.update, point, entry);
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
     this._pointEdit.setDeleteButtonClickHandler(() => {
       this._pointEdit.setData({
-        deleteButtonLabel: `Deleting...`,
+        deleteButtonLabel: ChangeLabels.deleteButtonLabel,
       });
 
-      this._onDataChange(this, `delete`, point, null);
+      this._onDataChange(this, Action.delete, point, null);
     });
 
     this._pointView.getElement()
@@ -81,8 +82,8 @@ export default class PointController {
       this._pointEdit.getElement().style.animation = ``;
       this._pointView.getElement().style.animation = ``;
       this._pointEdit.setData({
-        saveButtonLabel: `Save`,
-        deleteButtonLabel: `Delete`,
+        saveButtonLabel: DefaultLabels.saveButtonLabel,
+        deleteButtonLabel: DefaultLabels.deleteButtonLabel,
       });
     }, SHAKE_ANIMATION_TIMEOUT);
   }

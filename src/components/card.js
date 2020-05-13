@@ -2,6 +2,8 @@ import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
 import {MILLISECONDS, getPrep, getViewSelectedOptions} from '../constants.js';
 
+const MAX_OPTIONS = 3;
+
 const getDays = (duration) => {
   if (duration > MILLISECONDS) {
     return moment(duration).days() < 10 ? `0` + moment(duration).days() + `D` : moment(duration).days() + `D`;
@@ -32,7 +34,7 @@ export default class Card extends AbstractComponent {
     this._durationMins = moment(this._duration).minutes() < 10 ? `0` + moment(this._duration).minutes() : moment(this._duration).minutes();
     this._city = destination.name;
     this._cost = cost;
-    this._options = getViewSelectedOptions(options).slice(0, 3);
+    this._options = getViewSelectedOptions(options).slice(0, MAX_OPTIONS);
     this._optionsMarkup = createOptionsMarkup(this._options);
   }
 

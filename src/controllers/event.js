@@ -6,7 +6,14 @@ import PointController from './point.js';
 import moment from 'moment';
 import FormController from './form.js';
 import AbstractModel from '../models/abstractModel.js';
-import {isIncludes} from '../constants.js';
+import {isIncludes, SortType, Action} from '../constants.js';
+
+const START_COUNT = 1;
+const FilterName = {
+  everything: `Everything`,
+  future: `Future`,
+  past: `Past`,
+};
 
 export default class TripController {
   constructor(container, pointsModel, addNewEventElement, api) {
@@ -31,7 +38,7 @@ export default class TripController {
 
   renderDefault() {
     const data = this._pointsModel.getPointsAll();
-    let count = 1;
+    let count = START_COUNT;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
       let nextDay = new Day(count, start, item.eventStart);
@@ -85,15 +92,15 @@ export default class TripController {
     this._cardList.getElement().innerHTML = ``;
     const data = this._pointsModel.getPointsAll();
     switch (sortType) {
-      case `time`:
+      case SortType.timeType:
         const sortedByTimeEvents = data.slice().sort((a, b) => (b.eventEnd - b.eventStart) - (a.eventEnd - a.eventStart));
         sortedByTimeEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
         break;
-      case `price`:
+      case SortType.priceType:
         const sortedByPriceEvents = data.slice().sort((a, b) => b.cost - a.cost);
         sortedByPriceEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
         break;
-      case `default`:
+      case SortType.defaultType:
         this.rerender();
         break;
     }
@@ -132,7 +139,7 @@ export default class TripController {
 
   _onDataChange(controller, actionType, oldData, newData) {
     switch (actionType) {
-      case `create`:
+      case Action.create:
         this._api.createEvent(newData)
         .then((event) => {
           const isSuccess = this._pointsModel.addEvent(event);
@@ -146,7 +153,7 @@ export default class TripController {
           controller.shake();
         });
         break;
-      case `update`:
+      case Action.update:
         this._api.updateEvent(oldData.id, newData)
         .then((event) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, event);
@@ -159,7 +166,7 @@ export default class TripController {
           controller.shake();
         });
         break;
-      case `delete`:
+      case Action.delete:
         this._api.deleteEvent({
           id: oldData.id
         }).then(() => {
@@ -186,7 +193,7 @@ export default class TripController {
   filterEvents(currentFilter) {
     const data = this._pointsModel.getPointsAll();
     switch (currentFilter) {
-      case `Future`:
+      case FilterName.future:
         this._pointControllers.forEach((pointController) => pointController.destroy());
         const futureEvents = data.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
         this._pointControllers = [];
@@ -208,7 +215,7 @@ export default class TripController {
         let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
         this.updateTotal(futCosts);
         break;
-      case `Past`:
+      case FilterName.past:
         this._pointControllers.forEach((pointController) => pointController.destroy());
         const pastEvents = data.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
         this._pointControllers = [];
@@ -230,7 +237,7 @@ export default class TripController {
         let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
         this.updateTotal(pastCosts);
         break;
-      case `Everything`:
+      case FilterName.everything:
         this.rerender();
         this.renderTotalCount();
         break;

@@ -1,5 +1,7 @@
+const randomPrice = 1000;
+
 export const formDefaultEvent = {
-  "base_price": 1000,
+  "base_price": randomPrice,
   "date_from": new Date(Date.now()),
   "date_to": new Date(Date.now()),
   "destination": {

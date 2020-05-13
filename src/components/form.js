@@ -4,7 +4,7 @@ import Model from '../models//model.js';
 import Select from './select.js';
 import DestinationSection from './destinationSection.js';
 import {formDefaultEvent} from '../data.js';
-import {AVAILABLE_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
 import {check, uncheck, render, Position} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -55,7 +55,7 @@ export default class Form extends AbstractSmartComponent {
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Transfer</legend>
 
-            ${AVAILABLE_EVENT_TYPES.slice(0, 6).map((type) => (`
+            ${MOVE_EVENT_TYPES.map((type) => (`
               <div class="event__type-item">
                 <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
                 <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
@@ -65,7 +65,7 @@ export default class Form extends AbstractSmartComponent {
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Activity</legend>
 
-            ${AVAILABLE_EVENT_TYPES.slice(7, 10).map((type) => (`
+            ${STAY_EVENT_TYPES.map((type) => (`
             <div class="event__type-item">
               <input id="event-type-${type.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}">
               <label class="event__type-label  event__type-label--${type.toLowerCase()}" for="event-type-${type.toLowerCase()}-1">${type}</label>
@@ -230,15 +230,6 @@ export default class Form extends AbstractSmartComponent {
   _subscribeOnEvents() {
     this._addDatalis();
 
-    this.getElement()
-    .querySelector(`.event__available-offers`).addEventListener(`click`, (evt) => {
-      if (evt.target.tagName === `LABEL`) {
-        const title = evt.target.querySelector(`.event__offer-title`).textContent;
-        const option = this._options.find((item) => item.title === title);
-        option.isAdded = !option.isAdded;
-      }
-    });
-
     this.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
       this._eventStart = evt.target.value;
       this._eventEnd = evt.target.value;
@@ -257,7 +248,8 @@ export default class Form extends AbstractSmartComponent {
         check(this.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
         uncheck(this.getElement().querySelector(`.event__type-toggle`));
         this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
-        let type = AVAILABLE_EVENT_TYPES.find((it) => it === evt.target.textContent);
+
+        let type = AVAILABLE_EVENT_TYPES.find((item) => item === evt.target.textContent);
         const prep = getPrep(type);
         this._eventType = evt.target.textContent.toLowerCase();
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
