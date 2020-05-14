@@ -2,9 +2,9 @@ import {render, Position} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
-import PointController from './point.js';
+import PointController from './oneRoutePointManipulate.js';
 import moment from 'moment';
-import FormController from './form.js';
+import FormController from './addEvent.js';
 import AbstractModel from '../models/abstractModel.js';
 import {isIncludes, SortType, Action} from '../constants.js';
 
@@ -31,7 +31,7 @@ export default class TripController {
     this._subscriptions = [];
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
-    this._formController = new FormController(this._container, this._addNewEventElement, this._api, this._onDataChange);
+    this._formController = new FormController(this._container, this._cardList, this._addNewEventElement, this._api, this._onDataChange);
 
     this._pointControllers = [];
   }

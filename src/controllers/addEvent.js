@@ -1,4 +1,3 @@
-import {render, Position} from '../utils.js';
 import Form from '../components/form.js';
 import AbstractModel from '../models/abstractModel.js';
 import {ChangeLabels, Action} from '../constants.js';
@@ -6,8 +5,9 @@ import {ChangeLabels, Action} from '../constants.js';
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class FormController {
-  constructor(container, addNewEventElement, api, onDataChange) {
+  constructor(container, cardList, addNewEventElement, api, onDataChange) {
     this._container = container;
+    this._cardList = cardList;
     this._addNewEventElement = addNewEventElement;
     this._api = api;
     this._onDataChange = onDataChange;
@@ -48,7 +48,7 @@ export default class FormController {
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });
 
-    render(this._container, this._form, Position.AFTERBEGIN);
+    this._container.insertBefore(this._form.getElement(), this._cardList.getElement());
   }
 
   shake() {

@@ -2,7 +2,7 @@ import Menu from './components/menu.js';
 import RouteInfoElement from './components/route-info.js';
 import FiltersComponent from './components/filter.js';
 import Statistics from "./components/statistics.js";
-import TripController from './controllers/event.js';
+import TripController from './controllers/allEventsManipulate.js';
 import API from './api.js';
 import PointsModel from './models/points.js';
 import {Position, render, check} from './utils.js';
