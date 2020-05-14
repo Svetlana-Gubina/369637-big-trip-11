@@ -1,7 +1,12 @@
 import Form from '../components/form.js';
 import AbstractModel from '../models/abstractModel.js';
-import {ChangeLabels, Action} from '../constants.js';
+import {ChangeLabels, Action, StorePrefix, STORE_VER} from '../constants.js';
+import Provider from "../api/provider.js";
+import Store from "../api/store.js";
 
+
+const OFFERS_STORE_PREFIX = StorePrefix.offers;
+const OFFERS_STORE__NAME = `${OFFERS_STORE_PREFIX}-${STORE_VER}`;
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class FormController {
@@ -26,7 +31,11 @@ export default class FormController {
     const form = new Form(this._addNewEventElement, this._api, {points});
     this._form = form;
     const offers = new AbstractModel();
-    this._api.getOffers().then(function (list) {
+
+    const offersStore = new Store(OFFERS_STORE__NAME, window.localStorage);
+    const provider = new Provider(this._apiWithProvider, offersStore);
+
+    provider.getOffers().then(function (list) {
       offers.setPoints(list);
       form.setOptionsList({points: offers});
     });

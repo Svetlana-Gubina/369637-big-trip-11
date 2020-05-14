@@ -10,12 +10,12 @@ export default class Model {
     this.eventEnd = event[`date_to`];
   }
 
-  static parseEvent(data) {
-    return new Model(data);
+  static parseEvent(event) {
+    return new Model(event);
   }
 
-  static parseEvents(data) {
-    return data.map(Model.parseEvent);
+  static parseEvents(events) {
+    return events.map(Model.parseEvent);
   }
 
   toRAW() {
@@ -28,5 +28,9 @@ export default class Model {
       "offers": this.options,
       "type": this.eventType,
     };
+  }
+
+  static clone(event) {
+    return new Model(event.toRAW());
   }
 }

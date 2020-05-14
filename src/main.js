@@ -3,23 +3,30 @@ import RouteInfoElement from './components/route-info.js';
 import FiltersComponent from './components/filter.js';
 import Statistics from "./components/statistics.js";
 import TripController from './controllers/allEventsManipulate.js';
-import API from './api.js';
+import Provider from "./api/provider.js";
+import Store from "./api/store.js";
+import API from './api/api.js';
 import PointsModel from './models/points.js';
 import {Position, render, check} from './utils.js';
-import {FiltersNames, Tab} from './constants.js';
+import {FiltersNames, Tab, StorePrefix, STORE_VER} from './constants.js';
 
 const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
+const STORE_PREFIX = StorePrefix.events;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
+
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
 
 const tripMain = document.querySelector(`.trip-main`);
 const tripEvents = document.querySelector(`.trip-events`);
 const addNewEventElement = document.querySelector(`.trip-main__event-add-btn`);
 
 const pointsModel = new PointsModel();
-const controller = new TripController(tripEvents, pointsModel, addNewEventElement, api);
+const controller = new TripController(tripEvents, pointsModel, addNewEventElement, apiWithProvider);
 
-api.getData().then(function (points) {
+apiWithProvider.getData().then(function (points) {
   pointsModel.setPoints(points);
   const routeInfo = new RouteInfoElement({points: pointsModel});
   routeInfo.render(tripMain);

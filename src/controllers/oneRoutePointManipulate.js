@@ -2,14 +2,18 @@ import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
 import AbstractModel from '../models/abstractModel.js';
-import {DefaultLabels, ChangeLabels, Action} from '../constants.js';
+import {DefaultLabels, ChangeLabels, Action, StorePrefix, STORE_VER} from '../constants.js';
+import Provider from "../api/provider.js";
+import Store from "../api/store.js";
 
+const OFFERS_STORE_PREFIX = StorePrefix.offers;
+const OFFERS_STORE__NAME = `${OFFERS_STORE_PREFIX}-${STORE_VER}`;
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class PointController {
-  constructor(container, onChangeView, onDataChange, list, api, formController) {
+  constructor(container, onChangeView, onDataChange, list, apiWithProvider, formController) {
     this._list = list;
-    this._api = api;
+    this._apiWithProvider = apiWithProvider;
     this._container = container;
     this._onChangeView = onChangeView;
     this._onDataChange = onDataChange;
@@ -27,11 +31,15 @@ export default class PointController {
 
   render(point, {points}) {
     this._pointView = new Card(point);
-    const pointEdit = new EditEvent(point, {points}, this._api);
+    const pointEdit = new EditEvent(point, {points}, this._apiWithProvider);
     this._pointEdit = pointEdit;
 
     const offers = new AbstractModel();
-    this._api.getOffers().then(function (list) {
+
+    const offersStore = new Store(OFFERS_STORE__NAME, window.localStorage);
+    const provider = new Provider(this._apiWithProvider, offersStore);
+
+    provider.getOffers().then(function (list) {
       offers.setPoints(list);
       pointEdit.setOptionsList({points: offers});
     });

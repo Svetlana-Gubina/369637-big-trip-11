@@ -12,6 +12,14 @@ export const FiltersNames = [
   }
 ];
 
+export const StorePrefix = {
+  events: `bigTrip-events-localstorage`,
+  destinations: `bigTrip-destinations-localstorage`,
+  offers: `bigTrip-offers-localstorage`,
+};
+
+export const STORE_VER = `v1`;
+
 export const Action = {
   create: `create`,
   update: `update`,

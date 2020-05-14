@@ -6,8 +6,13 @@ import PointController from './oneRoutePointManipulate.js';
 import moment from 'moment';
 import FormController from './addEvent.js';
 import AbstractModel from '../models/abstractModel.js';
-import {isIncludes, SortType, Action} from '../constants.js';
+import {isIncludes, SortType, Action, StorePrefix, STORE_VER} from '../constants.js';
+import Provider from "../api/provider.js";
+import Store from "../api/store.js";
 
+
+const DESTINATIONS_STORE_PREFIX = StorePrefix.destinations;
+const DESTINATIONS_STORE_NAME = `${DESTINATIONS_STORE_PREFIX}-${STORE_VER}`;
 const START_COUNT = 1;
 const FilterName = {
   everything: `Everything`,
@@ -16,10 +21,10 @@ const FilterName = {
 };
 
 export default class TripController {
-  constructor(container, pointsModel, addNewEventElement, api) {
+  constructor(container, pointsModel, addNewEventElement, apiWithProvider) {
     this._container = container;
     this._pointsModel = pointsModel;
-    this._api = api;
+    this._apiWithProvider = apiWithProvider;
     this._cardList = new CardList();
     this._sortComponent = new Sort();
     this._totalField = null;
@@ -31,7 +36,7 @@ export default class TripController {
     this._subscriptions = [];
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
-    this._formController = new FormController(this._container, this._cardList, this._addNewEventElement, this._api, this._onDataChange);
+    this._formController = new FormController(this._container, this._cardList, this._addNewEventElement, this._apiWithProvider, this._onDataChange);
 
     this._pointControllers = [];
   }
@@ -123,10 +128,14 @@ export default class TripController {
   }
 
   _renderPoint(point, container) {
-    const pointController = new PointController(container, this._onChangeView, this._onDataChange, this._cardList, this._api, this._formController);
+    const pointController = new PointController(container, this._onChangeView, this._onDataChange, this._cardList, this._apiWithProvider, this._formController);
     this._pointControllers.push(pointController);
     const destinations = new AbstractModel();
-    this._api.getDestinations().then(function (points) {
+
+    const destinationsStore = new Store(DESTINATIONS_STORE_NAME, window.localStorage);
+    const provider = new Provider(this._apiWithProvider, destinationsStore);
+
+    provider.getDestinations().then(function (points) {
       destinations.setPoints(points);
       pointController.render(point, {points: destinations});
     });
@@ -140,7 +149,7 @@ export default class TripController {
   _onDataChange(controller, actionType, oldData, newData) {
     switch (actionType) {
       case Action.create:
-        this._api.createEvent(newData)
+        this._apiWithProvider.createEvent(newData)
         .then((event) => {
           const isSuccess = this._pointsModel.addEvent(event);
           if (isSuccess) {
@@ -154,7 +163,7 @@ export default class TripController {
         });
         break;
       case Action.update:
-        this._api.updateEvent(oldData.id, newData)
+        this._apiWithProvider.updateEvent(oldData.id, newData)
         .then((event) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, event);
           if (isSuccess) {
@@ -167,7 +176,7 @@ export default class TripController {
         });
         break;
       case Action.delete:
-        this._api.deleteEvent({
+        this._apiWithProvider.deleteEvent({
           id: oldData.id
         }).then(() => {
           this._pointsModel.removeEvent(oldData.id);
@@ -184,7 +193,11 @@ export default class TripController {
     this.rerender();
     const formController = this._formController;
     const destinations = new AbstractModel();
-    this._api.getDestinations().then(function (points) {
+
+    const destinationsStore = new Store(DESTINATIONS_STORE_NAME, window.localStorage);
+    const provider = new Provider(this._apiWithProvider, destinationsStore);
+
+    provider.getDestinations().then(function (points) {
       destinations.setPoints(points);
       formController.render({points: destinations});
     });
