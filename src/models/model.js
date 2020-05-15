@@ -20,6 +20,7 @@ export default class Model {
 
   toRAW() {
     return {
+      "id": this.id,
       "base_price": this.cost,
       "date_from": this.eventStart,
       "date_to": this.eventEnd,
@@ -33,4 +34,5 @@ export default class Model {
   static clone(event) {
     return new Model(event.toRAW());
   }
+
 }

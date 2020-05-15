@@ -10,7 +10,7 @@ import '../../node_modules/flatpickr/dist/themes/light.css';
 import DOMPurify from 'dompurify';
 
 export default class EditEvent extends AbstractSmartComponent {
-  constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}, api) {
+  constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}) {
     super();
     this._destinations = points.getPointsAll();
 
@@ -20,7 +20,6 @@ export default class EditEvent extends AbstractSmartComponent {
     this._description = destination.description;
 
     this._event = {eventType, destination, cost, options, eventStart, eventEnd, isFavorite};
-    this._api = api;
     this._eventType = eventType;
     this._prep = getPrep(this._eventType);
     this._cost = cost;

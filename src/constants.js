@@ -1,5 +1,8 @@
 export const MILLISECONDS = 86400000;
 
+export const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
+export const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
+
 export const FiltersNames = [
   {
     name: `Everything`,
@@ -45,6 +48,11 @@ export const DefaultLabels = {
 export const ChangeLabels = {
   deleteButtonLabel: `Deleting...`,
   saveButtonLabel: `Saving...`,
+};
+
+export const LoadingMessage = {
+  loading: `Loading...`,
+  failed: `Sorry,an error occurred`,
 };
 
 export const getViewSelectedOptions = (options) => {

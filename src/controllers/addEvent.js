@@ -1,20 +1,20 @@
 import Form from '../components/form.js';
 import AbstractModel from '../models/abstractModel.js';
-import {ChangeLabels, Action, StorePrefix, STORE_VER} from '../constants.js';
+import {ChangeLabels, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
-
+import API from '../api/api.js';
 
 const OFFERS_STORE_PREFIX = StorePrefix.offers;
 const OFFERS_STORE__NAME = `${OFFERS_STORE_PREFIX}-${STORE_VER}`;
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class FormController {
-  constructor(container, cardList, addNewEventElement, api, onDataChange) {
+  constructor(container, cardList, addNewEventElement, apiWithProvider, onDataChange) {
     this._container = container;
     this._cardList = cardList;
     this._addNewEventElement = addNewEventElement;
-    this._api = api;
+    this._apiWithProvider = apiWithProvider;
     this._onDataChange = onDataChange;
     this._form = null;
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
@@ -28,17 +28,22 @@ export default class FormController {
   }
 
   render({points}) {
-    const form = new Form(this._addNewEventElement, this._api, {points});
+    const form = new Form(this._addNewEventElement, {points});
     this._form = form;
     const offers = new AbstractModel();
 
+    const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
     const offersStore = new Store(OFFERS_STORE__NAME, window.localStorage);
-    const provider = new Provider(this._apiWithProvider, offersStore);
+    const provider = new Provider(api, offersStore);
 
     provider.getOffers().then(function (list) {
       offers.setPoints(list);
       form.setOptionsList({points: offers});
     });
+    // TODO: обработака ошибки загрузки
+    // .catch(() => {
+    //
+    // });
     document.addEventListener(`keydown`, this._onEscKeyDown);
 
     this._form.setSubmitHandler((evt) => {

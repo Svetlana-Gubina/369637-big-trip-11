@@ -6,10 +6,10 @@ import PointController from './oneRoutePointManipulate.js';
 import moment from 'moment';
 import FormController from './addEvent.js';
 import AbstractModel from '../models/abstractModel.js';
-import {isIncludes, SortType, Action, StorePrefix, STORE_VER} from '../constants.js';
+import {isIncludes, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
-
+import API from '../api/api.js';
 
 const DESTINATIONS_STORE_PREFIX = StorePrefix.destinations;
 const DESTINATIONS_STORE_NAME = `${DESTINATIONS_STORE_PREFIX}-${STORE_VER}`;
@@ -67,6 +67,7 @@ export default class TripController {
   }
 
   rerender() {
+    // TODO: update RouteInfoElement
     this._cardList.getElement().innerHTML = `<ul class="trip-days">
     </ul>`;
     this._days = [];
@@ -83,6 +84,7 @@ export default class TripController {
 
   renderTotalCount() {
     const data = this._pointsModel.getPointsAll();
+    // TODO: стоимость путешествия — это суммарная стоимость всех точек маршрута вместе со всеми выбранными дополнительными опциями.
     let costs = data.reduce((sum, current) => sum + current.cost, 0);
     this.updateTotal(costs);
   }
@@ -132,13 +134,18 @@ export default class TripController {
     this._pointControllers.push(pointController);
     const destinations = new AbstractModel();
 
+    const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
     const destinationsStore = new Store(DESTINATIONS_STORE_NAME, window.localStorage);
-    const provider = new Provider(this._apiWithProvider, destinationsStore);
+    const provider = new Provider(api, destinationsStore);
 
     provider.getDestinations().then(function (points) {
       destinations.setPoints(points);
       pointController.render(point, {points: destinations});
     });
+    // TODO: обработака ошибки загрузки
+    // .catch(() => {
+    //
+    // });
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 
@@ -158,6 +165,7 @@ export default class TripController {
             this.renderTotalCount();
           }
         })
+        // TODO: добавьте всему блоку с формой редактирования красную обводку (стилизация на ваше усмотрение).Перед повторной отправкой убирайте с формы красную обводку.
         .catch(() => {
           controller.shake();
         });
@@ -194,18 +202,25 @@ export default class TripController {
     const formController = this._formController;
     const destinations = new AbstractModel();
 
+    const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
     const destinationsStore = new Store(DESTINATIONS_STORE_NAME, window.localStorage);
-    const provider = new Provider(this._apiWithProvider, destinationsStore);
+    const provider = new Provider(api, destinationsStore);
 
     provider.getDestinations().then(function (points) {
       destinations.setPoints(points);
       formController.render({points: destinations});
     });
+    // TODO: обработака ошибки загрузки
+    // .catch(() => {
+    //
+    // });
   }
 
   filterEvents(currentFilter) {
     const data = this._pointsModel.getPointsAll();
     switch (currentFilter) {
+      // TODO: Заблокируйте кнопку выбора фильтра, если данному фильтру не удовлетворяет ни одна точка маршрута.
+      // debugger;
       case FilterName.future:
         this._pointControllers.forEach((pointController) => pointController.destroy());
         const futureEvents = data.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
@@ -227,8 +242,10 @@ export default class TripController {
         }
         let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
         this.updateTotal(futCosts);
+        // TODO: update RouteInfoElement
         break;
       case FilterName.past:
+        // debugger;
         this._pointControllers.forEach((pointController) => pointController.destroy());
         const pastEvents = data.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
         this._pointControllers = [];
@@ -249,6 +266,7 @@ export default class TripController {
         }
         let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
         this.updateTotal(pastCosts);
+        // TODO: update RouteInfoElement
         break;
       case FilterName.everything:
         this.rerender();

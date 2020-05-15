@@ -31,4 +31,9 @@ export default class RouteInfoElement extends AbstractComponent {
   render(container) {
     container.insertAdjacentHTML(`afterbegin`, this.getTemplate());
   }
+
+  // TODO:
+  rerender() {
+
+  }
 }

@@ -12,9 +12,8 @@ import '../../node_modules/flatpickr/dist/themes/light.css';
 import DOMPurify from 'dompurify';
 
 export default class Form extends AbstractSmartComponent {
-  constructor(addNewEventElement, api, {points}) {
+  constructor(addNewEventElement, {points}) {
     super();
-    this._api = api;
     this._addNewEventElement = addNewEventElement;
     this._destinations = points.getPointsAll();
     this._destination = formDefaultEvent[`destination`];

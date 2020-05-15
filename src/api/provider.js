@@ -1,7 +1,21 @@
 import Model from '../models/model.js';
+import {nanoid} from "nanoid";
 
 const isOnline = () => {
   return window.navigator.onLine;
+};
+
+const getSyncedEventss = (items) => {
+  return items.filter(({success}) => success)
+    .map(({payload}) => payload.point);
+};
+
+const createStoreStructure = (items) => {
+  return items.reduce((acc, current) => {
+    return Object.assign({}, acc, {
+      [current.id]: current,
+    });
+  }, {});
 };
 
 export default class Provider {
@@ -14,7 +28,8 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getData()
         .then((events) => {
-          events.forEach((event) => this._store.setItem(event.id, event.toRAW()));
+          const items = createStoreStructure((events.map((event) => event.toRAW())));
+          this._store.setItems(items);
 
           return events;
         });
@@ -28,7 +43,13 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getDestinations()
       .then((destinations) => {
-        destinations.forEach((destination) => this._store.setItem(destination.name, destination));
+        const items = destinations.reduce((acc, current) => {
+          return Object.assign({}, acc, {
+            [current.name]: current,
+          });
+        }, {});
+
+        this._store.setItems(items);
 
         return destinations;
       });
@@ -42,7 +63,13 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getOffers()
       .then((offers) => {
-        offers.forEach((offer) => this._store.setItem(offer.type, offers));
+        const items = offers.reduce((acc, current) => {
+          return Object.assign({}, acc, {
+            [current.type]: current,
+          });
+        }, {});
+
+        this._store.setItems(items);
 
         return offers;
       });
@@ -54,11 +81,18 @@ export default class Provider {
 
   createEvent(event) {
     if (isOnline()) {
-      return this._api.createEvent(event);
+      return this._api.createEvent(event)
+      .then((newEvent) => {
+        this._store.setItem(newEvent.id, newEvent.toRAW());
+
+        return newEvent;
+      });
     }
 
-    // TODO: Реализовать логику при отсутствии интернета
-    return Promise.reject(`offline logic is not implemented`);
+    const localNewEventId = nanoid();
+    const localNewEvent = Model.clone(Object.assign(event, {id: localNewEventId}));
+    this._store.setItem(localNewEvent.id, localNewEvent.toRAW());
+    return Promise.resolve(localNewEvent);
   }
 
   updateEvent(id, event) {
@@ -71,7 +105,6 @@ export default class Provider {
       });
     }
 
-    // TODO: Реализовать логику при отсутствии интернета
     const localEvent = Model.clone(Object.assign(event, {id}));
     this._store.setItem(id, localEvent.toRAW());
     return Promise.resolve(localEvent);
@@ -85,5 +118,20 @@ export default class Provider {
 
     this._store.removeItem(id);
     return Promise.resolve();
+  }
+
+  sync() {
+    if (isOnline()) {
+      const storeEvents = Object.values(this._store.getItems());
+      return this._api.sync(storeEvents)
+         .then((response) => {
+           const createdEvents = getSyncedEventss(response.created);
+           const updatedEvents = getSyncedEventss(response.updated);
+           const items = createStoreStructure([...createdEvents, ...updatedEvents]);
+           this._store.setItems(items);
+         });
+    }
+
+    return Promise.reject(new Error(`Sync data failed`));
   }
 }

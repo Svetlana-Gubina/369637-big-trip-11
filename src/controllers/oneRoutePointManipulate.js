@@ -2,9 +2,10 @@ import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
 import AbstractModel from '../models/abstractModel.js';
-import {DefaultLabels, ChangeLabels, Action, StorePrefix, STORE_VER} from '../constants.js';
+import {DefaultLabels, ChangeLabels, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
+import API from '../api/api.js';
 
 const OFFERS_STORE_PREFIX = StorePrefix.offers;
 const OFFERS_STORE__NAME = `${OFFERS_STORE_PREFIX}-${STORE_VER}`;
@@ -31,13 +32,14 @@ export default class PointController {
 
   render(point, {points}) {
     this._pointView = new Card(point);
-    const pointEdit = new EditEvent(point, {points}, this._apiWithProvider);
+    const pointEdit = new EditEvent(point, {points});
     this._pointEdit = pointEdit;
 
     const offers = new AbstractModel();
 
+    const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
     const offersStore = new Store(OFFERS_STORE__NAME, window.localStorage);
-    const provider = new Provider(this._apiWithProvider, offersStore);
+    const provider = new Provider(api, offersStore);
 
     provider.getOffers().then(function (list) {
       offers.setPoints(list);
