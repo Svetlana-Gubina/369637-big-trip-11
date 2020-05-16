@@ -1,3 +1,5 @@
+import {FilterName} from "./constants.js";
+
 export const check = (element) => {
   element.checked = true;
 };
@@ -48,3 +50,13 @@ export const replace = (newComponent, oldComponent) => {
   }
 };
 
+export const getEventsByFilter = (points, filterName) => {
+  switch (filterName) {
+    case FilterName.future:
+      return points.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
+    case FilterName.past:
+      return points.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
+  }
+
+  return points;
+};

@@ -9,6 +9,10 @@ import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import DOMPurify from 'dompurify';
 
+const getOptionForTitle = (options, title) => {
+  return options.find((item) => item.title === title);
+};
+
 export default class EditEvent extends AbstractSmartComponent {
   constructor({eventType, destination, cost, options, eventStart, eventEnd, isFavorite}, {points}) {
     super();
@@ -184,7 +188,7 @@ export default class EditEvent extends AbstractSmartComponent {
     .addEventListener(`change`, (evt) => {
       evt.preventDefault();
       const title = evt.target.id;
-      const option = this._options.find((item) => item.title === title);
+      const option = getOptionForTitle(this._options, title);
       if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
         option.isAdded = true;
       } else {
@@ -292,10 +296,7 @@ export default class EditEvent extends AbstractSmartComponent {
         const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
         this._options = [];
         this._options.push(...newItem.offers);
-        newItem.offers.forEach(function (offer) {
-          const option = new Offer(offer);
-          render(offersContainer, option, Position.BEFOREEND);
-        });
+        this._addOptionslis();
       }
     });
 

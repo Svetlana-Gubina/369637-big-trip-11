@@ -3,18 +3,6 @@ export const MILLISECONDS = 86400000;
 export const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 export const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 
-export const FiltersNames = [
-  {
-    name: `Everything`,
-  },
-  {
-    name: `Future`,
-  },
-  {
-    name: `Past`,
-  }
-];
-
 export const StorePrefix = {
   events: `bigTrip-events-localstorage`,
   destinations: `bigTrip-destinations-localstorage`,
@@ -128,4 +116,10 @@ const getOptionsAddedCost = (point) => {
 export const getTotalPoitsCost = (points) => {
   const optionsAddedCost = points.reduce((accumulator, currentValue) => accumulator + getOptionsAddedCost(currentValue) + currentValue.cost, 0);
   return optionsAddedCost;
+};
+
+export const FilterName = {
+  everything: `Everything`,
+  future: `Future`,
+  past: `Past`,
 };

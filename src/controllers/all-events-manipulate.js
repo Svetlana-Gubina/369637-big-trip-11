@@ -14,11 +14,6 @@ import API from '../api/api.js';
 const DESTINATIONS_STORE_PREFIX = StorePrefix.destinations;
 const DESTINATIONS_STORE_NAME = `${DESTINATIONS_STORE_PREFIX}-${STORE_VER}`;
 const START_COUNT = 1;
-const FilterName = {
-  everything: `Everything`,
-  future: `Future`,
-  past: `Past`,
-};
 
 export default class TripController {
   constructor(container, pointsModel, addNewEventElement, routeInfo, apiWithProvider) {
@@ -34,12 +29,13 @@ export default class TripController {
     this._onChangeView = this._onChangeView.bind(this);
     this._onDataChange = this._onDataChange.bind(this);
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
+    this._onFilterChange = this._onFilterChange.bind(this);
+    this._pointsModel.setFilterChangeHandler(this._onFilterChange);
     this._subscriptions = [];
+    this._pointControllers = [];
 
     this._sortComponent.setSortTypeChangeHandler(this._onSortTypeChange);
     this._formController = new FormController(this._container, this._cardList, this._addNewEventElement, this._apiWithProvider, this._onDataChange);
-
-    this._pointControllers = [];
   }
 
   renderDefault() {
@@ -206,62 +202,31 @@ export default class TripController {
     });
   }
 
-  filterEvents(currentFilter) {
-    const data = this._pointsModel.getPointsAll();
-    switch (currentFilter) {
-      // TODO: Заблокируйте кнопку выбора фильтра, если данному фильтру не удовлетворяет ни одна точка маршрута.
-      // debugger;
-      case FilterName.future:
-        this._pointControllers.forEach((pointController) => pointController.destroy());
-        const futureEvents = data.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
-        this._pointControllers = [];
-        this._subscriptions = [];
-        for (let day of this._days) {
-          if (new Date(day.getDate()).getTime() < Date.now() || !isIncludes(futureEvents, day.getPoints())) {
-            day.hide();
-          } else {
-            day.show();
-          }
-          const slots = day.getElement().querySelectorAll(`.trip-events__item`);
-          for (let point of futureEvents) {
-            let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
-            if (slot) {
-              this._renderPoint(point, slot);
-            }
+  _onFilterChange() {
+    this._pointControllers.forEach((pointController) => pointController.destroy());
+    this._pointControllers = [];
+    this._subscriptions = [];
+
+    const filteredPoints = this._pointsModel.getFilteredPoints();
+
+    if (filteredPoints.length === this._pointsModel.getPointsAll().length) {
+      this.rerender();
+      this.updateRouteInfo({points: this._pointsModel});
+    } else {
+      for (let day of this._days) {
+        if (!isIncludes(filteredPoints, day.getPoints())) {
+          day.hide();
+        } else {
+          day.show();
+        }
+        const slots = day.getElement().querySelectorAll(`.trip-events__item`);
+        for (let point of filteredPoints) {
+          let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
+          if (slot) {
+            this._renderPoint(point, slot);
           }
         }
-        let futCosts = futureEvents.reduce((sum, current) => sum + current.cost, 0);
-        this.updateTotal(futCosts);
-        // TODO: update RouteInfoElement
-        break;
-      case FilterName.past:
-        // debugger;
-        this._pointControllers.forEach((pointController) => pointController.destroy());
-        const pastEvents = data.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
-        this._pointControllers = [];
-        this._subscriptions = [];
-        for (let day of this._days) {
-          if (new Date(day.getDate()).getTime() > Date.now() || !isIncludes(pastEvents, day.getPoints())) {
-            day.hide();
-          } else {
-            day.show();
-          }
-          const slots = day.getElement().querySelectorAll(`.trip-events__item`);
-          for (let point of pastEvents) {
-            let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
-            if (slot) {
-              this._renderPoint(point, slot);
-            }
-          }
-        }
-        let pastCosts = pastEvents.reduce((sum, current) => sum + current.cost, 0);
-        this.updateTotal(pastCosts);
-        // TODO: update RouteInfoElement
-        break;
-      case FilterName.everything:
-        this.rerender();
-        this.renderTotalCount();
-        break;
+      }
     }
   }
 }

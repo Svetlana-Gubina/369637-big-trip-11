@@ -25,8 +25,13 @@ export default class PointController {
   }
 
   destroy() {
-    remove(this._pointView);
-    remove(this._pointEdit);
+    if (this._pointView) {
+      remove(this._pointView);
+    }
+    if (this._pointEdit) {
+      remove(this._pointEdit);
+    }
+
     document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
