@@ -114,3 +114,18 @@ export const isIncludes = (array1, array2) => {
   });
   return result.length > 0 ? true : false;
 };
+
+const getOptionsAddedCost = (point) => {
+  let cost = [];
+  point.options.forEach((option) => {
+    if (option.hasOwnProperty(`isAdded`) && option.isAdded === true) {
+      cost.push(option.price);
+    }
+  });
+  return cost.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+};
+
+export const getTotalPoitsCost = (points) => {
+  const optionsAddedCost = points.reduce((accumulator, currentValue) => accumulator + getOptionsAddedCost(currentValue) + currentValue.cost, 0);
+  return optionsAddedCost;
+};

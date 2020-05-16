@@ -2,11 +2,11 @@ import {render, Position} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
-import PointController from './oneRoutePointManipulate.js';
+import PointController from './one-route-point-manipulate.js';
 import moment from 'moment';
-import FormController from './addEvent.js';
-import AbstractModel from '../models/abstractModel.js';
-import {isIncludes, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT} from '../constants.js';
+import FormController from './add-event.js';
+import AbstractModel from '../models/abstract-model.js';
+import {isIncludes, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
 import API from '../api/api.js';
@@ -21,10 +21,11 @@ const FilterName = {
 };
 
 export default class TripController {
-  constructor(container, pointsModel, addNewEventElement, apiWithProvider) {
+  constructor(container, pointsModel, addNewEventElement, routeInfo, apiWithProvider) {
     this._container = container;
     this._pointsModel = pointsModel;
     this._apiWithProvider = apiWithProvider;
+    this._routeInfo = routeInfo;
     this._cardList = new CardList();
     this._sortComponent = new Sort();
     this._totalField = null;
@@ -67,7 +68,6 @@ export default class TripController {
   }
 
   rerender() {
-    // TODO: update RouteInfoElement
     this._cardList.getElement().innerHTML = `<ul class="trip-days">
     </ul>`;
     this._days = [];
@@ -84,15 +84,14 @@ export default class TripController {
 
   renderTotalCount() {
     const data = this._pointsModel.getPointsAll();
-    // TODO: стоимость путешествия — это суммарная стоимость всех точек маршрута вместе со всеми выбранными дополнительными опциями.
-    let costs = data.reduce((sum, current) => sum + current.cost, 0);
-    this.updateTotal(costs);
+    let total = 0;
+    total = total + getTotalPoitsCost(data);
+    this._totalField.innerHTML = total;
   }
 
-  updateTotal(number) {
-    let total = 0;
-    total = total + number;
-    this._totalField.innerHTML = total;
+  updateRouteInfo({points}) {
+    this._routeInfo.update({points});
+    this._routeInfo.rerender();
   }
 
   _onSortTypeChange(sortType) {
@@ -142,10 +141,6 @@ export default class TripController {
       destinations.setPoints(points);
       pointController.render(point, {points: destinations});
     });
-    // TODO: обработака ошибки загрузки
-    // .catch(() => {
-    //
-    // });
     this._subscriptions.push(pointController.setDefaultView.bind(pointController));
   }
 
@@ -162,10 +157,9 @@ export default class TripController {
           if (isSuccess) {
             controller.destroy();
             this.rerender();
-            this.renderTotalCount();
+            this.updateRouteInfo({points: this._pointsModel});
           }
         })
-        // TODO: добавьте всему блоку с формой редактирования красную обводку (стилизация на ваше усмотрение).Перед повторной отправкой убирайте с формы красную обводку.
         .catch(() => {
           controller.shake();
         });
@@ -176,7 +170,7 @@ export default class TripController {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, event);
           if (isSuccess) {
             this.rerender();
-            this.renderTotalCount();
+            this.updateRouteInfo({points: this._pointsModel});
           }
         })
         .catch(() => {
@@ -189,7 +183,7 @@ export default class TripController {
         }).then(() => {
           this._pointsModel.removeEvent(oldData.id);
           this.rerender();
-          this.renderTotalCount();
+          this.updateRouteInfo({points: this._pointsModel});
         }).catch(() => {
           controller.shake();
         });
@@ -210,10 +204,6 @@ export default class TripController {
       destinations.setPoints(points);
       formController.render({points: destinations});
     });
-    // TODO: обработака ошибки загрузки
-    // .catch(() => {
-    //
-    // });
   }
 
   filterEvents(currentFilter) {

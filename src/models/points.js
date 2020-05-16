@@ -1,4 +1,4 @@
-import AbstractModel from './abstractModel.js';
+import AbstractModel from './abstract-model.js';
 
 export default class PointsModel extends AbstractModel {
   removeEvent(id) {

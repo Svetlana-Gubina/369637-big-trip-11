@@ -2,7 +2,7 @@ import AbstractSmartComponent from './abstract-smart-component.js';
 import Offer from './offer.js';
 import Model from '../models//model.js';
 import Select from './select.js';
-import DestinationSection from './destinationSection.js';
+import DestinationSection from './destination-section.js';
 import {formDefaultEvent} from '../data.js';
 import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
 import {check, uncheck, render, Position} from '../utils.js';

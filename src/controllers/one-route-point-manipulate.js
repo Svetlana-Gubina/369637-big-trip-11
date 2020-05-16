@@ -1,7 +1,7 @@
 import {render, replace, remove, Position} from '../utils.js';
 import Card from '../components/card.js';
 import EditEvent from '../components/edit-event.js';
-import AbstractModel from '../models/abstractModel.js';
+import AbstractModel from '../models/abstract-model.js';
 import {DefaultLabels, ChangeLabels, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";

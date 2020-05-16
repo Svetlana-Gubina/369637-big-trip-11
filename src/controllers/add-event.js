@@ -1,5 +1,5 @@
 import Form from '../components/form.js';
-import AbstractModel from '../models/abstractModel.js';
+import AbstractModel from '../models/abstract-model.js';
 import {ChangeLabels, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
@@ -40,10 +40,6 @@ export default class FormController {
       offers.setPoints(list);
       form.setOptionsList({points: offers});
     });
-    // TODO: обработака ошибки загрузки
-    // .catch(() => {
-    //
-    // });
     document.addEventListener(`keydown`, this._onEscKeyDown);
 
     this._form.setSubmitHandler((evt) => {
@@ -67,8 +63,10 @@ export default class FormController {
 
   shake() {
     this._form.getElement().querySelector(`.event`).style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    this._form.getElement().querySelector(`.event`).style = `outline: 2px solid red;`;
     setTimeout(() => {
       this._form.getElement().style.animation = ``;
+      this._form.getElement().querySelector(`.event`).style = `outline: none;`;
     }, SHAKE_ANIMATION_TIMEOUT);
   }
 
