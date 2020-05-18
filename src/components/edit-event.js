@@ -226,17 +226,44 @@ export default class EditEvent extends AbstractSmartComponent {
 
   reset() {
     const event = this._event;
+
     this._eventType = event.eventType;
+    this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${this._eventType.toLowerCase()}.png`;
+    let type = AVAILABLE_EVENT_TYPES.find((item) => item === this._eventType);
+    const prep = getPrep(type);
+    this.getElement().querySelector(`.event__label`).textContent = type + prep;
+
     this._city = event.destination.name;
+    const container = this.getElement().querySelector(`.event__field-group--destination`);
+    const oldSelect = container.children[1];
+    container.removeChild(oldSelect);
+    const select = new Select(this._city, this._destinations);
+    select.render(container);
+
     this._cost = event.cost;
-    this._options = event.options;
+    this.getElement().querySelector(`.event__input--price`).value = this._cost;
+
+    this._options = event.options; // TODO!
+
     this._eventStart = event.eventStart;
     this._eventEnd = event.eventEnd;
-    this._photos = event.destination.pictures;
-    this._description = event.destination.description;
-    this._isFavorite = event.isFavorite;
+    this._applyFlatpickr();
 
-    this.rerender();
+    this._photos = event.destination.pictures;
+    this.getElement().querySelector(`.event__photos-tape`).innerHTML = `${this._photos.map((photo) => (`
+    <img class="event__photo" src="${photo.src}" alt="Event photo">`
+    .trim())).join(``)}`;
+
+    this._description = event.destination.description;
+    this.getElement().querySelector(`.event__destination-description`).innerHTML = this._description;
+
+    this._isFavorite = event.isFavorite;
+    const checkbox = this.getElement().querySelector(`#event-favorite-1`);
+    if (this._isFavorite) {
+      check(checkbox);
+    } else {
+      uncheck(checkbox);
+    }
   }
 
   setDeleteButtonClickHandler(handler) {
