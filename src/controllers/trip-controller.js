@@ -2,9 +2,9 @@ import {render, Position} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
-import PointController from './one-route-point-manipulate.js';
+import PointController from './point-controller.js';
 import moment from 'moment';
-import FormController from './add-event.js';
+import FormController from './form-controller.js';
 import AbstractModel from '../models/abstract-model.js';
 import {isIncludes, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
 import Provider from "../api/provider.js";
@@ -16,11 +16,12 @@ const DESTINATIONS_STORE_NAME = `${DESTINATIONS_STORE_PREFIX}-${STORE_VER}`;
 const START_COUNT = 1;
 
 export default class TripController {
-  constructor(container, pointsModel, addNewEventElement, routeInfo, apiWithProvider) {
+  constructor(container, pointsModel, addNewEventElement, routeInfo, apiWithProvider, filterController) {
     this._container = container;
     this._pointsModel = pointsModel;
     this._apiWithProvider = apiWithProvider;
     this._routeInfo = routeInfo;
+    this._filterController = filterController;
     this._cardList = new CardList();
     this._sortComponent = new Sort();
     this._totalField = null;
@@ -40,6 +41,7 @@ export default class TripController {
 
   renderDefault() {
     const data = this._pointsModel.getPointsAll();
+    // console.log(data);
     let count = START_COUNT;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
@@ -188,7 +190,10 @@ export default class TripController {
   }
 
   addEvent() {
-    this.rerender();
+    this. _onSortTypeChange(SortType.defaultType);
+    this._sortComponent.setDefaultChecked();
+    this._filterController.render();
+
     const formController = this._formController;
     const destinations = new AbstractModel();
 

@@ -230,8 +230,8 @@ export default class EditEvent extends AbstractSmartComponent {
     this._city = event.destination.name;
     this._cost = event.cost;
     this._options = event.options;
-    this._eventStart = new Date(event.eventStart).toLocaleDateString();
-    this._eventEnd = new Date(event.eventEnd).toLocaleDateString();
+    this._eventStart = event.eventStart;
+    this._eventEnd = event.eventEnd;
     this._photos = event.destination.pictures;
     this._description = event.destination.description;
     this._isFavorite = event.isFavorite;
@@ -286,14 +286,14 @@ export default class EditEvent extends AbstractSmartComponent {
         check(this.getElement().querySelector(`#event-type-${evt.target.textContent.toLowerCase()}-1`));
         uncheck(this.getElement().querySelector(`.event__type-toggle`));
         this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
-        let type = AVAILABLE_EVENT_TYPES.find((it) => it === evt.target.textContent);
+        let type = AVAILABLE_EVENT_TYPES.find((item) => item === evt.target.textContent);
         const prep = getPrep(type);
         this._eventType = evt.target.textContent.toLowerCase();
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
 
-        const newItem = this._optionsList.find((it) => it.type === evt.target.textContent);
+        const newItem = this._optionsList.find((item) => item.type === evt.target.textContent);
         this._options = [];
         this._options.push(...newItem.offers);
         this._addOptionslis();

@@ -2,14 +2,14 @@ import Menu from './components/menu.js';
 import Message from './components/loading-message.js';
 import RouteInfoElement from './components/route-info.js';
 import Statistics from "./components/statistics.js";
-import TripController from './controllers/all-events-manipulate.js';
+import TripController from './controllers/trip-controller.js';
 import Provider from "./api/provider.js";
 import Store from "./api/store.js";
 import API from './api/api.js';
 import PointsModel from './models/points.js';
 import {Position, render} from './utils.js';
 import {Tab, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, LoadingMessage} from './constants.js';
-import FilterController from './controllers/filter-events.js';
+import FilterController from './controllers/filter-controller.js';
 
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const STORE_PREFIX = StorePrefix.events;
@@ -27,7 +27,14 @@ addNewEventElement.disabled = true;
 
 const pointsModel = new PointsModel();
 const routeInfo = new RouteInfoElement(tripMain);
-const controller = new TripController(tripEvents, pointsModel, addNewEventElement, routeInfo, apiWithProvider);
+
+const tripControls = document.querySelector(`.trip-controls`);
+const menu = new Menu();
+render(tripControls, menu, Position.AFTERBEGIN);
+const filterController = new FilterController(tripControls, pointsModel);
+filterController.render();
+
+const controller = new TripController(tripEvents, pointsModel, addNewEventElement, routeInfo, apiWithProvider, filterController);
 
 apiWithProvider.getData().then(function (points) {
   pointsModel.setPoints(points);
@@ -42,13 +49,6 @@ apiWithProvider.getData().then(function (points) {
 .catch(() => {
   message.setData(LoadingMessage.failed);
 });
-
-const tripControls = document.querySelector(`.trip-controls`);
-const menu = new Menu();
-render(tripControls, menu, Position.AFTERBEGIN);
-
-const filterController = new FilterController(tripControls, pointsModel);
-filterController.render();
 
 const statisticsComponent = new Statistics({events: pointsModel});
 render(tripEvents, statisticsComponent, Position.BEFOREEND);
