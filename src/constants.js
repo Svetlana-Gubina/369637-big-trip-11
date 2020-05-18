@@ -43,9 +43,9 @@ export const LoadingMessage = {
   failed: `Sorry,an error occurred`,
 };
 
-export const getViewSelectedOptions = (options) => {
-  return options.reduce((accumulator, option) => option.isAdded ? [...accumulator, option] : accumulator, []);
-};
+// export const getSelectedOptions = (options) => {
+//   return options.reduce((accumulator, option) => option.isAdded ? [...accumulator, option] : accumulator, []);
+// };
 
 export const getNamedElement = (list, name) => {
   const index = list.findIndex((item) => item[`name`] === name);

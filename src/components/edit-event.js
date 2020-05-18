@@ -9,8 +9,21 @@ import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import DOMPurify from 'dompurify';
 
+// const getTitles = (options) => {
+//   return options.map((option) => option.title);
+// };
+
 const getOptionForTitle = (options, title) => {
   return options.find((item) => item.title === title);
+};
+
+const getTypeAvailableOptions = (optionsList, type) => {
+  const optionItem = optionsList.find((item) => item.type === type);
+  return optionItem.offers;
+};
+
+const renderOptions = (container, options) => {
+  options.forEach((option) => render(container, new Offer(option), Position.BEFOREEND));
 };
 
 export default class EditEvent extends AbstractSmartComponent {
@@ -179,22 +192,32 @@ export default class EditEvent extends AbstractSmartComponent {
     select.render(container);
   }
 
-  _addOptionslis() {
+  _addOptionslis(type) {
+    const availableOptions = getTypeAvailableOptions(this._optionsList, type);
     const container = this.getElement().querySelector(`.event__available-offers`);
-    this._options.forEach((option) => render(container, new Offer(option), Position.BEFOREEND));
 
-    this.getElement().querySelectorAll(`.event__offer-checkbox`)
-    .forEach((checkbox) => checkbox
-    .addEventListener(`change`, (evt) => {
-      evt.preventDefault();
-      const title = evt.target.id;
-      const option = getOptionForTitle(this._options, title);
-      if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
+    availableOptions.forEach((option) => {
+      if (getOptionForTitle(this._options, option.title)) {
         option.isAdded = true;
-      } else {
-        option.isAdded = false;
       }
-    }));
+    });
+    renderOptions(container, availableOptions);
+
+    // this.getElement().querySelectorAll(`.event__offer-checkbox`)
+    // .forEach((checkbox) => checkbox
+    // .addEventListener(`change`, (evt) => {
+    //   evt.preventDefault();
+    //   const title = evt.target.id;
+    //   const option = getOptionForTitle(availableOptions, title);
+    //   if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
+    //     option.isAdded = true;
+    //     this._options.push(option);
+    //   } else {
+    //     option.isAdded = false;
+    //     const index = this._options.indexOf(option);
+    //     this._options.splice(index, 1);
+    //   }
+    // }));
   }
 
   _applyFlatpickr() {
@@ -243,7 +266,10 @@ export default class EditEvent extends AbstractSmartComponent {
     this._cost = event.cost;
     this.getElement().querySelector(`.event__input--price`).value = this._cost;
 
-    this._options = event.options; // TODO!
+    this._options = event.options;
+    const optionsContainer = this.getElement().querySelector(`.event__available-offers`);
+    optionsContainer.innerHTML = ``;
+    this._addOptionslis(this._eventType);
 
     this._eventStart = event.eventStart;
     this._eventEnd = event.eventEnd;
@@ -294,11 +320,11 @@ export default class EditEvent extends AbstractSmartComponent {
 
   setOptionsList({points}) {
     this._optionsList = points.getPointsAll();
+    this._addOptionslis(this._eventType);
   }
 
   _subscribeOnEvents() {
     this._addDatalis();
-    this._addOptionslis();
 
     this.getElement()
     .querySelector(`#event-favorite-1`).addEventListener(`change`, (evt) => {
@@ -320,10 +346,11 @@ export default class EditEvent extends AbstractSmartComponent {
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
 
-        const newItem = this._optionsList.find((item) => item.type === evt.target.textContent);
-        this._options = [];
-        this._options.push(...newItem.offers);
-        this._addOptionslis();
+        // this._addOptionslis(evt.target.textContent);
+        // const newItem = this._optionsList.find((item) => item.type === evt.target.textContent);
+        // this._options = [];
+        // this._options.push(...newItem.offers);
+        // this._addOptionslis();
       }
     });
 
