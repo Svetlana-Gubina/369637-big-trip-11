@@ -1,17 +1,31 @@
 import AbstractModel from './abstract-model.js';
-import {FilterName} from "../constants.js";
-import {getEventsByFilter} from "../utils.js";
+import {FilterName, SortType} from "../constants.js";
+import {getEventsByFilter, getPointsSortedByType} from "../utils.js";
 
 export default class PointsModel extends AbstractModel {
   constructor() {
     super();
+    this._sortType = SortType.defaultType;
+
     this._activeFilterName = FilterName.everything;
     this._filterChangeHandlers = [];
+  }
+
+  getSortType() {
+    return this._sortType;
+  }
+
+  setSortType(sortType) {
+    this._sortType = sortType;
   }
 
   setFilter(filterName) {
     this._activeFilterName = filterName;
     this._callHandlers(this._filterChangeHandlers);
+  }
+
+  getSortedPoints() {
+    return getPointsSortedByType(this._points, this._sortType);
   }
 
   getFilteredPoints() {

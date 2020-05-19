@@ -6,11 +6,11 @@ export default class FiltersComponent extends AbstractComponent {
   constructor(filters) {
     super();
     this._filters = filters;
-    this._checkDefaultFilter();
+    this._disableFilter();
   }
 
   getTemplate() {
-    const filtersMarkup = this._filters.map((filter) => createFilterMarkup(filter, filter.checked)).join(`\n`);
+    const filtersMarkup = this._filters.map((filter) => createFilterMarkup(filter, filter.checked, filter.disabled)).join(`\n`);
     return `<form class="trip-filters" action="#" method="get">
     ${filtersMarkup}
     <button class="visually-hidden" type="submit">Accept filter</button>
@@ -29,7 +29,12 @@ export default class FiltersComponent extends AbstractComponent {
     });
   }
 
-  _checkDefaultFilter() {
-    this.getElement().querySelector(`#filter-everything`).checked = true;
+  _disableFilter() {
+    this._filters.forEach((filter) => {
+      if (filter.hasOwnProperty`disabled` && filter.disabled === true) {
+        const label = this.getElement().querySelector(`label[for="filter-${filter.name.toLowerCase()}"]`);
+        label.style.pointerEvents = `none`;
+      }
+    });
   }
 }

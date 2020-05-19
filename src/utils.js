@@ -1,4 +1,5 @@
-import {FilterName} from "./constants.js";
+import {FilterName, SortType} from "./constants.js";
+import moment from 'moment';
 
 export const check = (element) => {
   element.checked = true;
@@ -56,6 +57,22 @@ export const getEventsByFilter = (points, filterName) => {
       return points.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
     case FilterName.past:
       return points.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
+  }
+
+  return points;
+};
+
+const getDurationHours = (point) => {
+  const duration = new Date(point.eventEnd) - new Date(point.eventStart);
+  return moment(duration).hours();
+};
+
+export const getPointsSortedByType = (points, sortType) => {
+  switch (sortType) {
+    case SortType.timeType:
+      return points.slice().sort((a, b) => getDurationHours(b) - getDurationHours(a));
+    case SortType.priceType:
+      return points.slice().sort((a, b) => b.cost - a.cost);
   }
 
   return points;

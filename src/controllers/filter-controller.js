@@ -1,6 +1,6 @@
 import FiltersComponent from '../components/filter.js';
 import {FilterName} from "../constants.js";
-import {render, replace, Position} from "../utils.js";
+import {render, replace, Position, getEventsByFilter} from "../utils.js";
 
 export default class FilterController {
   constructor(container, pointsModel) {
@@ -21,10 +21,25 @@ export default class FilterController {
     const filters = Object.values(FilterName).map((filterName) => {
       return {
         name: filterName,
-        checked: filterName === this._activeFilterType,
       };
     });
     const oldComponent = this._filterComponent;
+
+    const filterDefault = filters.find((filter) => filter.name === FilterName.everything);
+    filterDefault.checked = true;
+
+    const points = this._pointsModel.getPointsAll();
+    const futureEvents = getEventsByFilter(points, FilterName.future);
+    const pastEvents = getEventsByFilter(points, FilterName.past);
+    if (futureEvents.length === 0) {
+      const filterFuture = filters.find((filter) => filter.name === FilterName.future);
+      filterFuture.disabled = true;
+    }
+    if (pastEvents.length === 0) {
+      const filterPast = filters.find((filter) => filter.name === FilterName.past);
+      filterPast.disabled = true;
+    }
+
     this._filterComponent = new FiltersComponent(filters);
 
     this._filterComponent.setFilterChangeHandler(this._onFilterChange);

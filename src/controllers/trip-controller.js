@@ -40,7 +40,8 @@ export default class TripController {
   }
 
   renderDefault() {
-    const data = this._pointsModel.getPointsAll();
+    const data = this._pointsModel.getPointsAll().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
+
     let count = START_COUNT;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
@@ -62,6 +63,13 @@ export default class TripController {
       }
       render(this._cardList.getElement().querySelector(`.trip-days`), day, Position.BEFOREEND);
     }
+  }
+
+  renderSortedPoints(points) {
+    this._cardList.getElement().innerHTML = ``;
+    points.forEach((point) => {
+      this._renderPoint(point, this._cardList.getElement());
+    });
   }
 
   rerender() {
@@ -92,18 +100,21 @@ export default class TripController {
   }
 
   _onSortTypeChange(sortType) {
-    this._cardList.getElement().innerHTML = ``;
-    const data = this._pointsModel.getPointsAll();
+    this._pointControllers = [];
+    this._subscriptions = [];
     switch (sortType) {
       case SortType.timeType:
-        const sortedByTimeEvents = data.slice().sort((a, b) => (b.eventEnd - b.eventStart) - (a.eventEnd - a.eventStart));
-        sortedByTimeEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+        this._pointsModel.setSortType(SortType.timeType);
+        const pointsSortedByTime = this._pointsModel.getSortedPoints();
+        this.renderSortedPoints(pointsSortedByTime);
         break;
       case SortType.priceType:
-        const sortedByPriceEvents = data.slice().sort((a, b) => b.cost - a.cost);
-        sortedByPriceEvents.forEach((event) => this._renderPoint(event, this._cardList.getElement()));
+        this._pointsModel.setSortType(SortType.priceType);
+        const pointsSortedByPtice = this._pointsModel.getSortedPoints();
+        this.renderSortedPoints(pointsSortedByPtice);
         break;
       case SortType.defaultType:
+        this._pointsModel.setSortType(SortType.defaultType);
         this.rerender();
         break;
     }
@@ -166,7 +177,12 @@ export default class TripController {
         .then((event) => {
           const isSuccess = this._pointsModel.updateEvent(oldData.id, event);
           if (isSuccess) {
-            this.rerender();
+            const currentSortType = this._pointsModel.getSortType();
+            if (currentSortType === SortType.defaultType) {
+              this.rerender();
+            } else {
+              this.renderSortedPoints(this._pointsModel.getPointsAll());
+            }
             this.updateRouteInfo({points: this._pointsModel});
           }
         })

@@ -198,22 +198,12 @@ export default class EditEvent extends AbstractSmartComponent {
       const title = evt.target.id;
       const option = getOptionForTitle(availableOptions, title);
 
-      // console.log(this._options);
       if (getOptionForTitle(this._options, option.title)) {
         const index = this._options.indexOf(option);
         this._options.splice(index, 1);
       } else {
         this._options.push(option);
       }
-      // console.log(this._options);
-      // if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
-      //   option.isAdded = true;
-      //   this._options.push(option);
-      // } else {
-      //   option.isAdded = false;
-      //   const index = this._options.indexOf(option);
-      //   this._options.splice(index, 1);
-      // }
     }));
   }
 
