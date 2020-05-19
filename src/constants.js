@@ -43,10 +43,6 @@ export const LoadingMessage = {
   failed: `Sorry,an error occurred`,
 };
 
-// export const getSelectedOptions = (options) => {
-//   return options.reduce((accumulator, option) => option.isAdded ? [...accumulator, option] : accumulator, []);
-// };
-
 export const getNamedElement = (list, name) => {
   const index = list.findIndex((item) => item[`name`] === name);
   return list[index];
@@ -122,4 +118,13 @@ export const FilterName = {
   everything: `Everything`,
   future: `Future`,
   past: `Past`,
+};
+
+export const getTypeAvailableOptions = (optionsList, type) => {
+  const optionItem = optionsList.find((item) => item.type === type);
+  return optionItem.offers;
+};
+
+export const getOptionForTitle = (options, title) => {
+  return options.find((item) => item.title === title);
 };

@@ -1,7 +1,5 @@
-const randomPrice = 1000;
-
 export const formDefaultEvent = {
-  "base_price": randomPrice,
+  "base_price": ``,
   "date_from": new Date(Date.now()),
   "date_to": new Date(Date.now()),
   "destination": {
@@ -13,5 +11,5 @@ export const formDefaultEvent = {
   "is_favorite": false,
   "offers": [
   ],
-  "type": `transport`,
+  "type": `flight`,
 };

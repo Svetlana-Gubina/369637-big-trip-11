@@ -53,7 +53,6 @@ export default class FormController {
     });
 
     this._form.setCancelButtonClickHandler(() => {
-      this._form.reset();
       this._form.remove();
       document.removeEventListener(`keydown`, this._onEscKeyDown);
     });

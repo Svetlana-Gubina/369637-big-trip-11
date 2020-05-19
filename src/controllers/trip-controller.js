@@ -41,7 +41,6 @@ export default class TripController {
 
   renderDefault() {
     const data = this._pointsModel.getPointsAll();
-    // console.log(data);
     let count = START_COUNT;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();

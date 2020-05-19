@@ -3,24 +3,11 @@ import Select from './select.js';
 import Model from '../models//model.js';
 import Offer from './offer.js';
 import {check, uncheck, render, Position} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
 import DOMPurify from 'dompurify';
-
-// const getTitles = (options) => {
-//   return options.map((option) => option.title);
-// };
-
-const getOptionForTitle = (options, title) => {
-  return options.find((item) => item.title === title);
-};
-
-const getTypeAvailableOptions = (optionsList, type) => {
-  const optionItem = optionsList.find((item) => item.type === type);
-  return optionItem.offers;
-};
 
 const renderOptions = (container, options) => {
   options.forEach((option) => render(container, new Offer(option), Position.BEFOREEND));
@@ -41,6 +28,7 @@ export default class EditEvent extends AbstractSmartComponent {
     this._prep = getPrep(this._eventType);
     this._cost = cost;
     this._options = options;
+    this._defaultOptions = [...options];
     this._eventStart = eventStart;
     this._eventEnd = eventEnd;
     this._start = new Date(eventStart).toLocaleDateString();
@@ -203,21 +191,30 @@ export default class EditEvent extends AbstractSmartComponent {
     });
     renderOptions(container, availableOptions);
 
-    // this.getElement().querySelectorAll(`.event__offer-checkbox`)
-    // .forEach((checkbox) => checkbox
-    // .addEventListener(`change`, (evt) => {
-    //   evt.preventDefault();
-    //   const title = evt.target.id;
-    //   const option = getOptionForTitle(availableOptions, title);
-    //   if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
-    //     option.isAdded = true;
-    //     this._options.push(option);
-    //   } else {
-    //     option.isAdded = false;
-    //     const index = this._options.indexOf(option);
-    //     this._options.splice(index, 1);
-    //   }
-    // }));
+    this.getElement().querySelectorAll(`.event__offer-checkbox`)
+    .forEach((checkbox) => checkbox
+    .addEventListener(`change`, (evt) => {
+      evt.preventDefault();
+      const title = evt.target.id;
+      const option = getOptionForTitle(availableOptions, title);
+
+      // console.log(this._options);
+      if (getOptionForTitle(this._options, option.title)) {
+        const index = this._options.indexOf(option);
+        this._options.splice(index, 1);
+      } else {
+        this._options.push(option);
+      }
+      // console.log(this._options);
+      // if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
+      //   option.isAdded = true;
+      //   this._options.push(option);
+      // } else {
+      //   option.isAdded = false;
+      //   const index = this._options.indexOf(option);
+      //   this._options.splice(index, 1);
+      // }
+    }));
   }
 
   _applyFlatpickr() {
@@ -266,7 +263,7 @@ export default class EditEvent extends AbstractSmartComponent {
     this._cost = event.cost;
     this.getElement().querySelector(`.event__input--price`).value = this._cost;
 
-    this._options = event.options;
+    this._options = this._defaultOptions;
     const optionsContainer = this.getElement().querySelector(`.event__available-offers`);
     optionsContainer.innerHTML = ``;
     this._addOptionslis(this._eventType);
@@ -346,11 +343,8 @@ export default class EditEvent extends AbstractSmartComponent {
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
 
-        // this._addOptionslis(evt.target.textContent);
-        // const newItem = this._optionsList.find((item) => item.type === evt.target.textContent);
-        // this._options = [];
-        // this._options.push(...newItem.offers);
-        // this._addOptionslis();
+        this._options = [];
+        this._addOptionslis(evt.target.textContent);
       }
     });
 

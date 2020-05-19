@@ -4,7 +4,7 @@ import Model from '../models//model.js';
 import Select from './select.js';
 import DestinationSection from './destination-section.js';
 import {formDefaultEvent} from '../data.js';
-import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
 import {check, uncheck, render, Position} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -159,18 +159,6 @@ export default class Form extends AbstractSmartComponent {
     this._applyFlatpickr();
   }
 
-  reset() {
-    const event = formDefaultEvent;
-    this._eventType = event[`type`];
-    this._city = event[`destination`][`name`];
-    this._eventStart = event[`date_from`];
-    this._eventEnd = event[`date_to`];
-    this._cost = event[`base_price`];
-    this._options = event[`offers`];
-
-    this.rerender();
-  }
-
   setCancelButtonClickHandler(handler) {
     this.getElement().querySelector(`.event__reset-btn`)
       .addEventListener(`click`, handler);
@@ -226,6 +214,39 @@ export default class Form extends AbstractSmartComponent {
     });
   }
 
+  setOptionsList({points}) {
+    this._optionsList = points.getPointsAll();
+    if (this._optionsList.length > 0) {
+      this.renderOptions(this._optionsList, this._eventType);
+    }
+  }
+
+  renderOptions(list, eventType) {
+    this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
+    const offersContainer = this.getElement().querySelector(`.event__available-offers`);
+    offersContainer.innerHTML = ``;
+    const availableOptions = getTypeAvailableOptions(list, eventType);
+    availableOptions.forEach(function (offer) {
+      const option = new Offer(offer);
+      render(offersContainer, option, Position.BEFOREEND);
+    });
+
+    this.getElement().querySelectorAll(`.event__offer-checkbox`)
+      .forEach((checkbox) => checkbox
+      .addEventListener(`change`, (evt) => {
+        evt.preventDefault();
+        const title = evt.target.id;
+        const option = getOptionForTitle(availableOptions, title);
+
+        if (getOptionForTitle(this._options, option.title)) {
+          const index = this._options.indexOf(option);
+          this._options.splice(index, 1);
+        } else {
+          this._options.push(option);
+        }
+      }));
+  }
+
   _subscribeOnEvents() {
     this._addDatalis();
 
@@ -253,9 +274,8 @@ export default class Form extends AbstractSmartComponent {
         this._eventType = evt.target.textContent.toLowerCase();
         this.getElement().querySelector(`.event__label`).textContent = type + prep;
 
-        const newItem = this._optionsList.find((option) => option.type === evt.target.textContent);
-        this._options = newItem.offers;
-        this.renderOptions(newItem.offers);
+        this._options = [];
+        this.renderOptions(this._optionsList, evt.target.textContent);
       }
     });
 
@@ -281,33 +301,5 @@ export default class Form extends AbstractSmartComponent {
     });
   }
 
-  setOptionsList({points}) {
-    this._optionsList = points.getPointsAll();
-  }
-
-  renderOptions(list) {
-    if (list.length > 0) {
-      this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
-      const offersContainer = this.getElement().querySelector(`.event__available-offers`);
-      offersContainer.innerHTML = ``;
-      list.forEach(function (offer) {
-        const option = new Offer(offer);
-        render(offersContainer, option, Position.BEFOREEND);
-      });
-
-      this.getElement().querySelectorAll(`.event__offer-checkbox`)
-      .forEach((checkbox) => checkbox
-      .addEventListener(`change`, (evt) => {
-        evt.preventDefault();
-        const title = evt.target.id;
-        const option = this._options.find((item) => item.title === title);
-        if (!option.hasOwnProperty(`isAdded`) || option.isAdded === false) {
-          option.isAdded = true;
-        } else {
-          option.isAdded = false;
-        }
-      }));
-    }
-  }
 }
 
