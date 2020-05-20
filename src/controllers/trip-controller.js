@@ -1,7 +1,8 @@
-import {render, Position} from '../utils.js';
+import {render, Position, remove} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
+import SlotList from '../components/slot-list.js';
 import PointController from './point-controller.js';
 import moment from 'moment';
 import FormController from './form-controller.js';
@@ -24,6 +25,7 @@ export default class TripController {
     this._filterController = filterController;
     this._cardList = new CardList();
     this._sortComponent = new Sort();
+    this._slotList = null;
     this._totalField = null;
     this._addNewEventElement = addNewEventElement;
     this._days = [];
@@ -40,8 +42,7 @@ export default class TripController {
   }
 
   renderDefault() {
-    const data = this._pointsModel.getPointsAll().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
-
+    const data = this._pointsModel.getFilteredPoints().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
     let count = START_COUNT;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
@@ -66,9 +67,16 @@ export default class TripController {
   }
 
   renderSortedPoints(points) {
-    this._cardList.getElement().innerHTML = ``;
+    if (this._slotList) {
+      remove(this._slotList);
+    }
+    const slotList = new SlotList(points);
+    this._slotList = slotList;
+    render(this._container, slotList, Position.BEFOREEND);
+    const slots = slotList.getElement().querySelectorAll(`.trip-events__item`);
     points.forEach((point) => {
-      this._renderPoint(point, this._cardList.getElement());
+      let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
+      this._renderPoint(point, slot);
     });
   }
 
@@ -88,7 +96,7 @@ export default class TripController {
   }
 
   renderTotalCount() {
-    const data = this._pointsModel.getPointsAll();
+    const data = this._pointsModel.getFilteredPoints();
     let total = 0;
     total = total + getTotalPoitsCost(data);
     this._totalField.innerHTML = total;
@@ -100,8 +108,11 @@ export default class TripController {
   }
 
   _onSortTypeChange(sortType) {
+    this._pointControllers.forEach((pointController) => pointController.destroy());
     this._pointControllers = [];
     this._subscriptions = [];
+    this.hide();
+
     switch (sortType) {
       case SortType.timeType:
         this._pointsModel.setSortType(SortType.timeType);
@@ -115,6 +126,7 @@ export default class TripController {
         break;
       case SortType.defaultType:
         this._pointsModel.setSortType(SortType.defaultType);
+        this.show();
         this.rerender();
         break;
     }
@@ -181,7 +193,7 @@ export default class TripController {
             if (currentSortType === SortType.defaultType) {
               this.rerender();
             } else {
-              this.renderSortedPoints(this._pointsModel.getPointsAll());
+              this.renderSortedPoints(this._pointsModel.getSortedPoints());
             }
             this.updateRouteInfo({points: this._pointsModel});
           }
@@ -195,7 +207,12 @@ export default class TripController {
           id: oldData.id
         }).then(() => {
           this._pointsModel.removeEvent(oldData.id);
-          this.rerender();
+          const currentSortType = this._pointsModel.getSortType();
+          if (currentSortType === SortType.defaultType) {
+            this.rerender();
+          } else {
+            this.renderSortedPoints(this._pointsModel.getSortedPoints());
+          }
           this.updateRouteInfo({points: this._pointsModel});
         }).catch(() => {
           controller.shake();
@@ -226,6 +243,11 @@ export default class TripController {
     this._pointControllers.forEach((pointController) => pointController.destroy());
     this._pointControllers = [];
     this._subscriptions = [];
+
+    this.show();
+    if (this._slotList) {
+      remove(this._slotList);
+    }
 
     const filteredPoints = this._pointsModel.getFilteredPoints();
 

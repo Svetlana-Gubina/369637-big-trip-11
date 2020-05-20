@@ -23,6 +23,12 @@ export const SortType = {
   defaultType: `default`,
 };
 
+export const FilterName = {
+  everything: `Everything`,
+  future: `Future`,
+  past: `Past`,
+};
+
 export const Tab = {
   tableTab: `Table`,
   statsTab: `Stats`,
@@ -79,14 +85,14 @@ export const STAY_EVENT_TYPES = AVAILABLE_EVENT_TYPES.slice(INIT_STAY_TYPES_COUN
 
 const TO_EVENT_TYPES = AVAILABLE_EVENT_TYPES.slice(0, INIT_STAY_TYPES_COUNT);
 
-export const getPrep = (type) => {
-  let prep;
+export const getPreposition = (type) => {
+  let preposition;
   if (TO_EVENT_TYPES.includes(type)) {
-    prep = ` to `;
+    preposition = ` to `;
   } else {
-    prep = ` in `;
+    preposition = ` in `;
   }
-  return prep;
+  return preposition;
 };
 
 export const isIncludes = (array1, array2) => {
@@ -112,12 +118,6 @@ const getOptionsAddedCost = (point) => {
 export const getTotalPoitsCost = (points) => {
   const optionsAddedCost = points.reduce((accumulator, currentValue) => accumulator + getOptionsAddedCost(currentValue) + currentValue.cost, 0);
   return optionsAddedCost;
-};
-
-export const FilterName = {
-  everything: `Everything`,
-  future: `Future`,
-  past: `Past`,
 };
 
 export const getTypeAvailableOptions = (optionsList, type) => {

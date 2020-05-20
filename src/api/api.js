@@ -7,8 +7,13 @@ const Method = {
   DELETE: `DELETE`
 };
 
+const ResponseCode = {
+  SUCCESS: 200,
+  REDIRECT: 300,
+};
+
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= ResponseCode.SUCCESS && response.status < ResponseCode.REDIRECT) {
     return response;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);

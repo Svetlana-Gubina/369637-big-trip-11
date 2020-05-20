@@ -25,7 +25,7 @@ export default class PointsModel extends AbstractModel {
   }
 
   getSortedPoints() {
-    return getPointsSortedByType(this._points, this._sortType);
+    return getPointsSortedByType(this.getFilteredPoints(), this._sortType);
   }
 
   getFilteredPoints() {

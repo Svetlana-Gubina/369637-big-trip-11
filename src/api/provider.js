@@ -11,8 +11,8 @@ const getSyncedEventss = (items) => {
 };
 
 const createStoreStructure = (items) => {
-  return items.reduce((acc, current) => {
-    return Object.assign({}, acc, {
+  return items.reduce((accumulator, current) => {
+    return Object.assign({}, accumulator, {
       [current.id]: current,
     });
   }, {});
@@ -43,8 +43,8 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getDestinations()
       .then((destinations) => {
-        const items = destinations.reduce((acc, current) => {
-          return Object.assign({}, acc, {
+        const items = destinations.reduce((accumulator, current) => {
+          return Object.assign({}, accumulator, {
             [current.name]: current,
           });
         }, {});
@@ -63,8 +63,8 @@ export default class Provider {
     if (isOnline()) {
       return this._api.getOffers()
       .then((offers) => {
-        const items = offers.reduce((acc, current) => {
-          return Object.assign({}, acc, {
+        const items = offers.reduce((accumulator, current) => {
+          return Object.assign({}, accumulator, {
             [current.type]: current,
           });
         }, {});

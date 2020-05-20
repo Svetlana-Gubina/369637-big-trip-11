@@ -3,7 +3,7 @@ import Select from './select.js';
 import Model from '../models//model.js';
 import Offer from './offer.js';
 import {check, uncheck, render, Position} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -25,7 +25,7 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this._event = {eventType, destination, cost, options, eventStart, eventEnd, isFavorite};
     this._eventType = eventType;
-    this._prep = getPrep(this._eventType);
+    this._preposition = getPreposition(this._eventType);
     this._cost = cost;
     this._options = options;
     this._defaultOptions = [...options];
@@ -84,7 +84,7 @@ export default class EditEvent extends AbstractSmartComponent {
 
                 <div class="event__field-group  event__field-group--destination">
                   <label class="event__label  event__type-output" for="event-destination-1">
-                  ${this._eventType} ${this._prep}
+                  ${this._eventType} ${this._preposition}
                   </label>
 
                 </div>
@@ -240,8 +240,8 @@ export default class EditEvent extends AbstractSmartComponent {
     this._eventType = event.eventType;
     this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${this._eventType.toLowerCase()}.png`;
     let type = AVAILABLE_EVENT_TYPES.find((item) => item === this._eventType);
-    const prep = getPrep(type);
-    this.getElement().querySelector(`.event__label`).textContent = type + prep;
+    const preposition = getPreposition(type);
+    this.getElement().querySelector(`.event__label`).textContent = type + preposition;
 
     this._city = event.destination.name;
     const container = this.getElement().querySelector(`.event__field-group--destination`);
@@ -327,9 +327,9 @@ export default class EditEvent extends AbstractSmartComponent {
         uncheck(this.getElement().querySelector(`.event__type-toggle`));
         this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
         let type = AVAILABLE_EVENT_TYPES.find((item) => item === evt.target.textContent);
-        const prep = getPrep(type);
+        const preposition = getPreposition(type);
         this._eventType = evt.target.textContent.toLowerCase();
-        this.getElement().querySelector(`.event__label`).textContent = type + prep;
+        this.getElement().querySelector(`.event__label`).textContent = type + preposition;
         let offersContainer = this.getElement().querySelector(`.event__available-offers`);
         offersContainer.innerHTML = ``;
 

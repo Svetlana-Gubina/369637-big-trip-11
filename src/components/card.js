@@ -1,12 +1,13 @@
 import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
-import {MILLISECONDS, getPrep} from '../constants.js';
+import {MILLISECONDS, getPreposition} from '../constants.js';
 
 const MAX_OPTIONS = 3;
+const LIMIT = 10;
 
 const getDays = (duration) => {
   if (duration > MILLISECONDS) {
-    return moment(duration).days() < 10 ? `0` + moment(duration).days() + `D` : moment(duration).days() + `D`;
+    return moment(duration).days() < LIMIT ? `0` + moment(duration).days() + `D` : moment(duration).days() + `D`;
   }
   return ``;
 };
@@ -25,13 +26,13 @@ export default class Card extends AbstractComponent {
     super();
     this._id = id;
     this._eventType = eventType;
-    this._prep = getPrep(this._eventType);
+    this._preposition = getPreposition(this._eventType);
     this._eventStart = new Date(eventStart).getTime();
     this._eventEnd = new Date(eventEnd).getTime();
     this._duration = this._eventEnd - this._eventStart;
     this._durationDays = getDays(this._duration);
-    this._durationHrs = moment(this._duration).hours() < 10 ? `0` + moment(this._duration).hours() : moment(this._duration).hours();
-    this._durationMins = moment(this._duration).minutes() < 10 ? `0` + moment(this._duration).minutes() : moment(this._duration).minutes();
+    this._durationHrs = moment(this._duration).hours() < LIMIT ? `0` + moment(this._duration).hours() : moment(this._duration).hours();
+    this._durationMins = moment(this._duration).minutes() < LIMIT ? `0` + moment(this._duration).minutes() : moment(this._duration).minutes();
     this._city = destination.name;
     this._cost = cost;
     this._options = options.slice(0, MAX_OPTIONS);
@@ -43,11 +44,11 @@ export default class Card extends AbstractComponent {
           <div class="event__type">
             <img class="event__type-icon" width="42" height="42" src="img/icons/${this._eventType}.png" alt="Event type icon">
           </div>
-          <h3 class="event__title">${this._eventType} ${this._prep} ${this._city}</h3>
+          <h3 class="event__title">${this._eventType} ${this._preposition} ${this._city}</h3>
 
           <div class="event__schedule">
           <p class="event__time">
-          <time class="event__start-time" datetime="2019-03-18T10:30">${moment(this._eventStart).format(`hh : mm`)}</time>
+          <time class="event__start-time" datetime="2019-03-18TLIMIT:30">${moment(this._eventStart).format(`hh : mm`)}</time>
           &mdash;
           <time class="event__end-time" datetime="2019-03-18T11:00">${moment(this._eventEnd).format(`hh : mm`)}</time>
           </p>

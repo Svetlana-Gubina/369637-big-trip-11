@@ -8,6 +8,10 @@ import API from '../api/api.js';
 const OFFERS_STORE_PREFIX = StorePrefix.offers;
 const OFFERS_STORE__NAME = `${OFFERS_STORE_PREFIX}-${STORE_VER}`;
 const SHAKE_ANIMATION_TIMEOUT = 600;
+const Outline = {
+  RED: `outline: 2px solid red;`,
+  NONE: `outline: none;`,
+};
 
 export default class FormController {
   constructor(container, cardList, addNewEventElement, apiWithProvider, onDataChange) {
@@ -62,10 +66,10 @@ export default class FormController {
 
   shake() {
     this._form.getElement().querySelector(`.event`).style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
-    this._form.getElement().querySelector(`.event`).style = `outline: 2px solid red;`;
+    this._form.getElement().querySelector(`.event`).style = Outline.RED;
     setTimeout(() => {
       this._form.getElement().style.animation = ``;
-      this._form.getElement().querySelector(`.event`).style = `outline: none;`;
+      this._form.getElement().querySelector(`.event`).style = Outline.NONE;
     }, SHAKE_ANIMATION_TIMEOUT);
   }
 

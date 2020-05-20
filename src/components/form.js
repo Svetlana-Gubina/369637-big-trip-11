@@ -4,7 +4,7 @@ import Model from '../models//model.js';
 import Select from './select.js';
 import DestinationSection from './destination-section.js';
 import {formDefaultEvent} from '../data.js';
-import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPrep, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
 import {check, uncheck, render, Position} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -20,7 +20,7 @@ export default class Form extends AbstractSmartComponent {
     this._description = formDefaultEvent[`destination`][`description`];
     this._photos = formDefaultEvent[`destination`][`pictures`];
     this._eventType = formDefaultEvent[`type`];
-    this._prep = getPrep(this._eventType);
+    this._preposition = getPreposition(this._eventType);
     this._city = formDefaultEvent[`destination`][`name`];
     this._eventStart = formDefaultEvent[`date_from`];
     this._hoursStart = new Date(this._eventStart).getHours();
@@ -75,7 +75,7 @@ export default class Form extends AbstractSmartComponent {
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
-          ${this._eventType} ${this._prep}
+          ${this._eventType} ${this._preposition}
         </label>
 
       </div>
@@ -270,9 +270,9 @@ export default class Form extends AbstractSmartComponent {
         this.getElement().querySelector(`.event__type-icon`).src = `img/icons/${evt.target.textContent.toLowerCase()}.png`;
 
         let type = AVAILABLE_EVENT_TYPES.find((item) => item === evt.target.textContent);
-        const prep = getPrep(type);
+        const preposition = getPreposition(type);
         this._eventType = evt.target.textContent.toLowerCase();
-        this.getElement().querySelector(`.event__label`).textContent = type + prep;
+        this.getElement().querySelector(`.event__label`).textContent = type + preposition;
 
         this._options = [];
         this.renderOptions(this._optionsList, evt.target.textContent);
