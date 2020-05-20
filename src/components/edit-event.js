@@ -234,7 +234,7 @@ export default class EditEvent extends AbstractSmartComponent {
     });
   }
 
-  reset() {
+  _setDefaultValues() {
     const event = this._event;
 
     this._eventType = event.eventType;
@@ -277,6 +277,10 @@ export default class EditEvent extends AbstractSmartComponent {
     } else {
       uncheck(checkbox);
     }
+  }
+
+  reset() {
+    this._setDefaultValues();
   }
 
   setDeleteButtonClickHandler(handler) {

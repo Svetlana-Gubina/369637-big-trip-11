@@ -41,8 +41,13 @@ export default class TripController {
     this._formController = new FormController(this._container, this._cardList, this._addNewEventElement, this._apiWithProvider, this._onDataChange);
   }
 
-  renderDefault() {
+  _setDays() {
+    if (this._days) {
+      this._days = [];
+    }
+
     const data = this._pointsModel.getFilteredPoints().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
+
     let count = START_COUNT;
     data.forEach((item) => {
       let start = moment(item.eventStart).date();
@@ -56,6 +61,25 @@ export default class TripController {
         nextDay._points.push(item);
       }
     });
+
+    console.log(this._days);
+  }
+
+  renderDefault() {
+    // const data = this._pointsModel.getFilteredPoints().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
+    // let count = START_COUNT;
+    // data.forEach((item) => {
+    //   let start = moment(item.eventStart).date();
+    //   let nextDay = new Day(count, start, item.eventStart);
+    //   let dayIndex = this._days.findIndex((dayItem) => dayItem.getDateNumber() === start);
+    //   if (dayIndex !== -1) {
+    //     this._days[dayIndex]._points.push(item);
+    //   } else {
+    //     count++;
+    //     this._days.push(nextDay);
+    //     nextDay._points.push(item);
+    //   }
+    // });
     for (let day of this._days) {
       const slots = day.getElement().querySelectorAll(`.trip-events__item`);
       for (let point of day._points) {
@@ -89,6 +113,8 @@ export default class TripController {
   }
 
   render(totalField) {
+    this._setDays();
+
     this._totalField = totalField;
     render(this._container, this._sortComponent, Position.AFTERBEGIN);
     render(this._container, this._cardList, Position.BEFOREEND);
