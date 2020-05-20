@@ -25,8 +25,9 @@ export default class FilterController {
     });
     const oldComponent = this._filterComponent;
 
-    const filterDefault = filters.find((filter) => filter.name === FilterName.everything);
-    filterDefault.checked = true;
+    const currentFilter = this._pointsModel.getFilterName();
+    const filterChecked = filters.find((filter) => filter.name === currentFilter);
+    filterChecked.checked = true;
 
     const points = this._pointsModel.getPointsAll();
     const futureEvents = getEventsByFilter(points, FilterName.future);

@@ -181,6 +181,8 @@ export default class EditEvent extends AbstractSmartComponent {
   }
 
   _addOptionslis(type) {
+    // Список дополнительных опций доступен не для всех типов точек маршрута. Для некоторых типов точек дополнительные опции могут отсутствовать.
+    // В этом случае контейнер для вывода дополнительных опций не отображается.
     const availableOptions = getTypeAvailableOptions(this._optionsList, type);
     const container = this.getElement().querySelector(`.event__available-offers`);
 
@@ -196,13 +198,14 @@ export default class EditEvent extends AbstractSmartComponent {
     .addEventListener(`change`, (evt) => {
       evt.preventDefault();
       const title = evt.target.id;
-      const option = getOptionForTitle(availableOptions, title);
+      const targetOption = this._options.find((option) => option.title === title);
 
-      if (getOptionForTitle(this._options, option.title)) {
-        const index = this._options.indexOf(option);
+      if (targetOption) {
+        const index = this._options.indexOf(targetOption);
         this._options.splice(index, 1);
       } else {
-        this._options.push(option);
+        const newOption = availableOptions.slice().find((option) => option.title === title);
+        this._options.push(newOption);
       }
     }));
   }
@@ -360,6 +363,7 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this.getElement()
     .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
+      // Add validation
       this._cost = DOMPurify.sanitize(evt.target.value);
     });
 

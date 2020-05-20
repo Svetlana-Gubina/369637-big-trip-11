@@ -29,6 +29,7 @@ export default class Card extends AbstractComponent {
     this._preposition = getPreposition(this._eventType);
     this._eventStart = new Date(eventStart).getTime();
     this._eventEnd = new Date(eventEnd).getTime();
+    // TODO: fix this._duration
     this._duration = this._eventEnd - this._eventStart;
     this._durationDays = getDays(this._duration);
     this._durationHrs = moment(this._duration).hours() < LIMIT ? `0` + moment(this._duration).hours() : moment(this._duration).hours();

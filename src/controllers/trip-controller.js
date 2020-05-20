@@ -1,4 +1,4 @@
-import {render, Position, remove} from '../utils.js';
+import {render, Position, remove, getDaysByFilter} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
@@ -7,7 +7,7 @@ import PointController from './point-controller.js';
 import moment from 'moment';
 import FormController from './form-controller.js';
 import AbstractModel from '../models/abstract-model.js';
-import {isIncludes, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
+import {SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
 import API from '../api/api.js';
@@ -46,7 +46,7 @@ export default class TripController {
       this._days = [];
     }
 
-    const data = this._pointsModel.getFilteredPoints().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
+    const data = this._pointsModel.getPointsAll().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
 
     let count = START_COUNT;
     data.forEach((item) => {
@@ -61,26 +61,15 @@ export default class TripController {
         nextDay._points.push(item);
       }
     });
-
-    console.log(this._days);
   }
 
   renderDefault() {
-    // const data = this._pointsModel.getFilteredPoints().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
-    // let count = START_COUNT;
-    // data.forEach((item) => {
-    //   let start = moment(item.eventStart).date();
-    //   let nextDay = new Day(count, start, item.eventStart);
-    //   let dayIndex = this._days.findIndex((dayItem) => dayItem.getDateNumber() === start);
-    //   if (dayIndex !== -1) {
-    //     this._days[dayIndex]._points.push(item);
-    //   } else {
-    //     count++;
-    //     this._days.push(nextDay);
-    //     nextDay._points.push(item);
-    //   }
-    // });
-    for (let day of this._days) {
+    // TODO: В случае отсутствия точек маршрута вместо списка отображается текст:
+    // «Click New Event to create your first point».
+    const currentFilter = this._pointsModel.getFilterName();
+    const days = getDaysByFilter(this._days, currentFilter);
+
+    for (let day of days) {
       const slots = day.getElement().querySelectorAll(`.trip-events__item`);
       for (let point of day._points) {
         let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
@@ -105,9 +94,10 @@ export default class TripController {
   }
 
   rerender() {
+    this._filterController.render();
+
     this._cardList.getElement().innerHTML = `<ul class="trip-days">
     </ul>`;
-    this._days = [];
     this._pointControllers = [];
     this.renderDefault();
   }
@@ -202,6 +192,8 @@ export default class TripController {
           const isSuccess = this._pointsModel.addEvent(event);
           if (isSuccess) {
             controller.destroy();
+            this._setDays();
+
             this.rerender();
             this.updateRouteInfo({points: this._pointsModel});
           }
@@ -217,8 +209,12 @@ export default class TripController {
           if (isSuccess) {
             const currentSortType = this._pointsModel.getSortType();
             if (currentSortType === SortType.defaultType) {
+              this._setDays();
+
               this.rerender();
             } else {
+              this._setDays();
+
               this.renderSortedPoints(this._pointsModel.getSortedPoints());
             }
             this.updateRouteInfo({points: this._pointsModel});
@@ -235,8 +231,12 @@ export default class TripController {
           this._pointsModel.removeEvent(oldData.id);
           const currentSortType = this._pointsModel.getSortType();
           if (currentSortType === SortType.defaultType) {
+            this._setDays();
+
             this.rerender();
           } else {
+            this._setDays();
+
             this.renderSortedPoints(this._pointsModel.getSortedPoints());
           }
           this.updateRouteInfo({points: this._pointsModel});
@@ -248,9 +248,10 @@ export default class TripController {
   }
 
   addEvent() {
+    // Если в момент нажатия на кнопку «New Event» был выбран фильтр или применена сортировка, то они сбрасываются
+    // на состояния «Everything» и по умолчанию соответственно.
     this. _onSortTypeChange(SortType.defaultType);
     this._sortComponent.setDefaultChecked();
-    this._filterController.render();
 
     const formController = this._formController;
     const destinations = new AbstractModel();
@@ -270,31 +271,11 @@ export default class TripController {
     this._pointControllers = [];
     this._subscriptions = [];
 
-    this.show();
     if (this._slotList) {
       remove(this._slotList);
     }
+    this.show();
 
-    const filteredPoints = this._pointsModel.getFilteredPoints();
-
-    if (filteredPoints.length === this._pointsModel.getPointsAll().length) {
-      this.rerender();
-      this.updateRouteInfo({points: this._pointsModel});
-    } else {
-      for (let day of this._days) {
-        if (!isIncludes(filteredPoints, day.getPoints())) {
-          day.hide();
-        } else {
-          day.show();
-        }
-        const slots = day.getElement().querySelectorAll(`.trip-events__item`);
-        for (let point of filteredPoints) {
-          let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
-          if (slot) {
-            this._renderPoint(point, slot);
-          }
-        }
-      }
-    }
+    this.rerender();
   }
 }

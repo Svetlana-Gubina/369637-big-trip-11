@@ -95,16 +95,6 @@ export const getPreposition = (type) => {
   return preposition;
 };
 
-export const isIncludes = (array1, array2) => {
-  const result = [];
-  array2.forEach(function (item) {
-    if (array1.includes(item)) {
-      result.push(item);
-    }
-  });
-  return result.length > 0 ? true : false;
-};
-
 const getOptionsAddedCost = (point) => {
   let cost = [];
   point.options.forEach((option) => {

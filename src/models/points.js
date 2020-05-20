@@ -11,6 +11,10 @@ export default class PointsModel extends AbstractModel {
     this._filterChangeHandlers = [];
   }
 
+  getFilterName() {
+    return this._activeFilterName;
+  }
+
   getSortType() {
     return this._sortType;
   }

@@ -222,6 +222,8 @@ export default class Form extends AbstractSmartComponent {
   }
 
   renderOptions(list, eventType) {
+    // Список дополнительных опций доступен не для всех типов точек маршрута. Для некоторых типов точек дополнительные опции могут отсутствовать.
+    // В этом случае контейнер для вывода дополнительных опций не отображается.
     this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
     const offersContainer = this.getElement().querySelector(`.event__available-offers`);
     offersContainer.innerHTML = ``;
@@ -297,6 +299,7 @@ export default class Form extends AbstractSmartComponent {
 
     this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, (evt) => {
       evt.preventDefault();
+      // Add validation
       this._cost = DOMPurify.sanitize(evt.target.value);
     });
   }

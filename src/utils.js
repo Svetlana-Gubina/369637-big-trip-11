@@ -58,6 +58,17 @@ export const getEventsByFilter = (points, filterName) => {
   return points;
 };
 
+export const getDaysByFilter = (days, filterName) => {
+  switch (filterName) {
+    case FilterName.future:
+      return days.slice().filter((day) => new Date(day.getDate()) > Date.now());
+    case FilterName.past:
+      return days.slice().filter((day) => new Date(day.getDate()) < Date.now());
+  }
+
+  return days;
+};
+
 const getDurationHours = (point) => {
   const duration = new Date(point.eventEnd) - new Date(point.eventStart);
   return moment(duration).hours();
