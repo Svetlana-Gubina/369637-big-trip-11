@@ -1,5 +1,13 @@
-import {FilterName, SortType} from "./constants.js";
+import {FilterName, SortType, HIDDEN_CLASS} from "./constants.js";
 import moment from 'moment';
+
+export const show = (element) => {
+  element.classList.remove(HIDDEN_CLASS);
+};
+
+export const hide = (element) => {
+  element.classList.add(HIDDEN_CLASS);
+};
 
 export const check = (element) => {
   element.checked = true;
@@ -83,4 +91,17 @@ export const getPointsSortedByType = (points, sortType) => {
   }
 
   return points;
+};
+
+export const checkInput = (input, customValidation) => {
+  customValidation.checkValidity(input);
+
+  if (customValidation.getInvalidities() !== ``) {
+    const message = customValidation.getInvalidities();
+    input.setCustomValidity(message);
+    return false;
+  } else {
+    input.setCustomValidity(``);
+    return true;
+  }
 };

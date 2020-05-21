@@ -3,9 +3,10 @@ import Offer from './offer.js';
 import Model from '../models//model.js';
 import Select from './select.js';
 import DestinationSection from './destination-section.js';
+import CustomValidation from './custom-validation.js';
 import {formDefaultEvent} from '../data.js';
-import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
-import {check, uncheck, render, Position} from '../utils.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle, INVALIDITY_MESSAGE, REG} from '../constants.js';
+import {check, uncheck, render, Position, checkInput, show, hide} from '../utils.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -222,31 +223,39 @@ export default class Form extends AbstractSmartComponent {
   }
 
   renderOptions(list, eventType) {
-    // Список дополнительных опций доступен не для всех типов точек маршрута. Для некоторых типов точек дополнительные опции могут отсутствовать.
-    // В этом случае контейнер для вывода дополнительных опций не отображается.
-    this.getElement().querySelector(`.event__details`).classList.remove(`visually-hidden`);
-    const offersContainer = this.getElement().querySelector(`.event__available-offers`);
-    offersContainer.innerHTML = ``;
+    show(this.getElement().querySelector(`.event__details`));
+
+    const offersSection = this.getElement().querySelector(`.event__section--offers`);
     const availableOptions = getTypeAvailableOptions(list, eventType);
-    availableOptions.forEach(function (offer) {
-      const option = new Offer(offer);
-      render(offersContainer, option, Position.BEFOREEND);
-    });
 
-    this.getElement().querySelectorAll(`.event__offer-checkbox`)
-      .forEach((checkbox) => checkbox
-      .addEventListener(`change`, (evt) => {
-        evt.preventDefault();
-        const title = evt.target.id;
-        const option = getOptionForTitle(availableOptions, title);
+    if (availableOptions.length > 0) {
+      show(offersSection);
 
-        if (getOptionForTitle(this._options, option.title)) {
-          const index = this._options.indexOf(option);
-          this._options.splice(index, 1);
-        } else {
-          this._options.push(option);
-        }
-      }));
+      const offersContainer = this.getElement().querySelector(`.event__available-offers`);
+      offersContainer.innerHTML = ``;
+      availableOptions.forEach(function (offer) {
+        const option = new Offer(offer);
+        render(offersContainer, option, Position.BEFOREEND);
+      });
+
+      this.getElement().querySelectorAll(`.event__offer-checkbox`)
+        .forEach((checkbox) => checkbox
+        .addEventListener(`change`, (evt) => {
+          evt.preventDefault();
+          const title = evt.target.id;
+          const option = getOptionForTitle(availableOptions, title);
+
+          if (getOptionForTitle(this._options, option.title)) {
+            const index = this._options.indexOf(option);
+            this._options.splice(index, 1);
+          } else {
+            this._options.push(option);
+          }
+        }));
+    } else {
+      hide(offersSection);
+    }
+
   }
 
   _subscribeOnEvents() {
@@ -291,15 +300,28 @@ export default class Form extends AbstractSmartComponent {
 
       const section = new DestinationSection(destinationPoint);
       const details = this.getElement().querySelector(`.event__details`);
-      if (details.classList.contains(`visually-hidden`)) {
-        details.classList.remove(`visually-hidden`);
+
+      show(details);
+      if (details.children[1]) {
+        details.children[1].remove();
       }
+
       render(details, section, Position.BEFOREEND);
     });
 
     this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, (evt) => {
-      evt.preventDefault();
-      // Add validation
+      const inputPrice = evt.target;
+      const inputPriceValidityChecks = [
+        {
+          isInvalid(input) {
+            return !input.value.match(REG);
+          },
+          invalidityMessage: INVALIDITY_MESSAGE,
+        },
+      ];
+      const customValidation = new CustomValidation(inputPriceValidityChecks);
+      checkInput(inputPrice, customValidation);
+
       this._cost = DOMPurify.sanitize(evt.target.value);
     });
   }

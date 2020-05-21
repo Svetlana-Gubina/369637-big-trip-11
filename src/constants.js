@@ -3,6 +3,11 @@ export const MILLISECONDS = 86400000;
 export const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAr=${Math.random()}`;
 export const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 
+export const INVALIDITY_MESSAGE = `Please enter an integer`;
+export const REG = /^\d+$/;
+
+export const HIDDEN_CLASS = `visually-hidden`;
+
 export const StorePrefix = {
   events: `bigTrip-events-localstorage`,
   destinations: `bigTrip-destinations-localstorage`,

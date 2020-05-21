@@ -7,7 +7,7 @@ import PointController from './point-controller.js';
 import moment from 'moment';
 import FormController from './form-controller.js';
 import AbstractModel from '../models/abstract-model.js';
-import {SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
+import {FilterName, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
 import Provider from "../api/provider.js";
 import Store from "../api/store.js";
 import API from '../api/api.js';
@@ -248,9 +248,8 @@ export default class TripController {
   }
 
   addEvent() {
-    // Если в момент нажатия на кнопку «New Event» был выбран фильтр или применена сортировка, то они сбрасываются
-    // на состояния «Everything» и по умолчанию соответственно.
-    this. _onSortTypeChange(SortType.defaultType);
+    this._pointsModel.setSortType(SortType.defaultType);
+    this._pointsModel.setFilter(FilterName.everything);
     this._sortComponent.setDefaultChecked();
 
     const formController = this._formController;

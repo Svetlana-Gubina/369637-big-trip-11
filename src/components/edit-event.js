@@ -2,8 +2,9 @@ import AbstractSmartComponent from './abstract-smart-component.js';
 import Select from './select.js';
 import Model from '../models//model.js';
 import Offer from './offer.js';
-import {check, uncheck, render, Position} from '../utils.js';
-import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle} from '../constants.js';
+import CustomValidation from './custom-validation.js';
+import {check, uncheck, render, Position, checkInput, show, hide} from '../utils.js';
+import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle, INVALIDITY_MESSAGE, REG} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 import '../../node_modules/flatpickr/dist/themes/light.css';
@@ -181,33 +182,38 @@ export default class EditEvent extends AbstractSmartComponent {
   }
 
   _addOptionslis(type) {
-    // Список дополнительных опций доступен не для всех типов точек маршрута. Для некоторых типов точек дополнительные опции могут отсутствовать.
-    // В этом случае контейнер для вывода дополнительных опций не отображается.
     const availableOptions = getTypeAvailableOptions(this._optionsList, type);
-    const container = this.getElement().querySelector(`.event__available-offers`);
+    const offersSection = this.getElement().querySelector(`.event__section--offers`);
 
-    availableOptions.forEach((option) => {
-      if (getOptionForTitle(this._options, option.title)) {
-        option.isAdded = true;
-      }
-    });
-    renderOptions(container, availableOptions);
+    if (availableOptions.length > 0) {
+      show(offersSection);
 
-    this.getElement().querySelectorAll(`.event__offer-checkbox`)
-    .forEach((checkbox) => checkbox
-    .addEventListener(`change`, (evt) => {
-      evt.preventDefault();
-      const title = evt.target.id;
-      const targetOption = this._options.find((option) => option.title === title);
+      const container = this.getElement().querySelector(`.event__available-offers`);
+      availableOptions.forEach((option) => {
+        if (getOptionForTitle(this._options, option.title)) {
+          option.isAdded = true;
+        }
+      });
+      renderOptions(container, availableOptions);
 
-      if (targetOption) {
-        const index = this._options.indexOf(targetOption);
-        this._options.splice(index, 1);
-      } else {
-        const newOption = availableOptions.slice().find((option) => option.title === title);
-        this._options.push(newOption);
-      }
-    }));
+      this.getElement().querySelectorAll(`.event__offer-checkbox`)
+      .forEach((checkbox) => checkbox
+      .addEventListener(`change`, (evt) => {
+        evt.preventDefault();
+        const title = evt.target.id;
+        const targetOption = this._options.find((option) => option.title === title);
+
+        if (targetOption) {
+          const index = this._options.indexOf(targetOption);
+          this._options.splice(index, 1);
+        } else {
+          const newOption = availableOptions.slice().find((option) => option.title === title);
+          this._options.push(newOption);
+        }
+      }));
+    } else {
+      hide(offersSection);
+    }
   }
 
   _applyFlatpickr() {
@@ -363,7 +369,18 @@ export default class EditEvent extends AbstractSmartComponent {
 
     this.getElement()
     .querySelector(`.event__input--price`).addEventListener(`keydown`, (evt) => {
-      // Add validation
+      const inputPrice = evt.target;
+      const inputPriceValidityChecks = [
+        {
+          isInvalid(input) {
+            return !input.value.match(REG);
+          },
+          invalidityMessage: INVALIDITY_MESSAGE,
+        },
+      ];
+      const customValidation = new CustomValidation(inputPriceValidityChecks);
+      checkInput(inputPrice, customValidation);
+
       this._cost = DOMPurify.sanitize(evt.target.value);
     });
 
