@@ -41,6 +41,10 @@ export default class Sort extends AbstractComponent {
             </form>`;
   }
 
+  setDefaultChecked() {
+    check(this.getElement().querySelector(`#sort-event`));
+  }
+
   getSortType() {
     return this._currenSortType;
   }

@@ -1,16 +1,10 @@
 import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
-import {MILLISECONDS, getPreposition} from '../constants.js';
+import {getPreposition} from '../constants.js';
+import {convertMillisecondsToTime} from '../utils.js';
 
 const MAX_OPTIONS = 3;
-const LIMIT = 10;
-
-const getDays = (duration) => {
-  if (duration > MILLISECONDS) {
-    return moment(duration).days() < LIMIT ? `0` + moment(duration).days() + `D` : moment(duration).days() + `D`;
-  }
-  return ``;
-};
+const DAYS_TEXT = `D`;
 
 const createOptionsMarkup = (options) => {
   return options.map((option) => (`
@@ -29,11 +23,10 @@ export default class Card extends AbstractComponent {
     this._preposition = getPreposition(this._eventType);
     this._eventStart = new Date(eventStart).getTime();
     this._eventEnd = new Date(eventEnd).getTime();
-    // TODO: fix this._duration
     this._duration = this._eventEnd - this._eventStart;
-    this._durationDays = getDays(this._duration);
-    this._durationHrs = moment(this._duration).hours() < LIMIT ? `0` + moment(this._duration).hours() : moment(this._duration).hours();
-    this._durationMins = moment(this._duration).minutes() < LIMIT ? `0` + moment(this._duration).minutes() : moment(this._duration).minutes();
+    this._durationDays = convertMillisecondsToTime(this._duration).days ? convertMillisecondsToTime(this._duration).days + DAYS_TEXT : ``;
+    this._durationHrs = convertMillisecondsToTime(this._duration).hours;
+    this._durationMins = convertMillisecondsToTime(this._duration).minutes;
     this._city = destination.name;
     this._cost = cost;
     this._options = options.slice(0, MAX_OPTIONS);

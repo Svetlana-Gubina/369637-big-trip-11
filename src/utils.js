@@ -1,4 +1,4 @@
-import {FilterName, SortType, HIDDEN_CLASS} from "./constants.js";
+import {FilterName, SortType, HIDDEN_CLASS, MILLISECONDS} from "./constants.js";
 import moment from 'moment';
 
 export const show = (element) => {
@@ -105,3 +105,44 @@ export const checkInput = (input, customValidation) => {
     return true;
   }
 };
+
+const HOURS = 24;
+const MINUTES = 60;
+const SECONDS = 60;
+const MILLISECONDS_IN_SECOND = 1000;
+const LIMIT = 9;
+
+export const getDays = (milliseconds) => {
+  return milliseconds / (SECONDS * MINUTES * HOURS * MILLISECONDS_IN_SECOND);
+};
+
+const getDaysResult = (milliseconds) => {
+  if (milliseconds < MILLISECONDS) {
+    return 0;
+  } else {
+    const days = getDays(milliseconds);
+    const absoluteDays = Math.floor(days);
+    return absoluteDays > LIMIT ? absoluteDays : `0` + absoluteDays;
+  }
+};
+
+export const convertMillisecondsToTime = (milliseconds) => {
+  const days = getDays(milliseconds);
+  const absoluteDays = Math.floor(days);
+  const rest = getDaysResult(milliseconds) === 0 ? milliseconds : (days - absoluteDays);
+
+  const hours = rest / (MILLISECONDS_IN_SECOND * SECONDS * MINUTES);
+  const absoluteHours = Math.floor(hours);
+  const hoursResult = absoluteHours > LIMIT ? absoluteHours : `0` + absoluteHours;
+
+  const minutes = (hours - absoluteHours) * 60;
+  const absoluteMinutes = Math.floor(minutes);
+  const minutesResult = absoluteMinutes > LIMIT ? absoluteMinutes : `0` + absoluteMinutes;
+
+  return {
+    days: getDaysResult(milliseconds),
+    hours: hoursResult,
+    minutes: minutesResult,
+  };
+};
+

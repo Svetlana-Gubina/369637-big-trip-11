@@ -37,14 +37,18 @@ filterController.render();
 const controller = new TripController(tripEvents, pointsModel, addNewEventElement, routeInfo, apiWithProvider, filterController);
 
 apiWithProvider.getData().then(function (points) {
-  pointsModel.setPoints(points);
-  message.remove();
-  routeInfo.update({points: pointsModel});
-  routeInfo.render(tripMain);
-  const totalField = document.querySelector(`.trip-info__cost-value`);
-  controller.render(totalField);
-  controller.renderTotalCount();
   addNewEventElement.disabled = false;
+  if (points.length > 0) {
+    pointsModel.setPoints(points);
+    message.remove();
+    routeInfo.update({points: pointsModel});
+    routeInfo.render(tripMain);
+    const totalField = document.querySelector(`.trip-info__cost-value`);
+    controller.render(totalField);
+    controller.renderTotalCount();
+  } else {
+    message.setData(LoadingMessage.noPoints);
+  }
 })
 .catch(() => {
   message.setData(LoadingMessage.failed);

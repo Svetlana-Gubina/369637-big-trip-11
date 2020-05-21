@@ -52,6 +52,7 @@ export const ChangeLabels = {
 export const LoadingMessage = {
   loading: `Loading...`,
   failed: `Sorry,an error occurred`,
+  noPoints: `Click New Event to create your first point`,
 };
 
 export const getNamedElement = (list, name) => {
