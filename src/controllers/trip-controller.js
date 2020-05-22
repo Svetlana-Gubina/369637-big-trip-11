@@ -1,10 +1,9 @@
-import {render, Position, remove, getDaysByFilter} from '../utils.js';
+import {render, Position, remove, getDaysByFilter, getEventDates} from '../utils.js';
 import Day from '../components/day.js';
 import CardList from '../components/card-list.js';
 import Sort from '../components/sort.js';
 import SlotList from '../components/slot-list.js';
 import PointController from './point-controller.js';
-import moment from 'moment';
 import FormController from './form-controller.js';
 import AbstractModel from '../models/abstract-model.js';
 import {FilterName, SortType, Action, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, getTotalPoitsCost} from '../constants.js';
@@ -46,29 +45,28 @@ export default class TripController {
       this._days = [];
     }
 
-    const data = this._pointsModel.getPointsAll().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
+    const allPoints = this._pointsModel.getPointsAll().slice().sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
 
     let count = START_COUNT;
-    data.forEach((item) => {
-      let start = moment(item.eventStart).date();
-      let nextDay = new Day(count, start, item.eventStart);
-      let dayIndex = this._days.findIndex((dayItem) => dayItem.getDateNumber() === start);
-      if (dayIndex !== -1) {
-        this._days[dayIndex]._points.push(item);
-      } else {
-        count++;
-        this._days.push(nextDay);
-        nextDay._points.push(item);
+    allPoints.forEach((item) => {
+      const itemDates = getEventDates(item);
+      for (let day of itemDates) {
+        let nextDay = new Day(count, day.dateNumber, day.date);
+        let dayIndex = this._days.findIndex((dayItem) => dayItem.getDateNumber() === day.dateNumber);
+        if (dayIndex !== -1) {
+          this._days[dayIndex]._points.push(item);
+        } else {
+          count++;
+          this._days.push(nextDay);
+          nextDay._points.push(item);
+        }
       }
     });
   }
 
   renderDefault() {
-    // TODO: В случае отсутствия точек маршрута вместо списка отображается текст:
-    // «Click New Event to create your first point».
     const currentFilter = this._pointsModel.getFilterName();
     const days = getDaysByFilter(this._days, currentFilter);
-
     for (let day of days) {
       const slots = day.getElement().querySelectorAll(`.trip-events__item`);
       for (let point of day._points) {
@@ -112,9 +110,9 @@ export default class TripController {
   }
 
   renderTotalCount() {
-    const data = this._pointsModel.getFilteredPoints();
+    const points = this._pointsModel.getFilteredPoints();
     let total = 0;
-    total = total + getTotalPoitsCost(data);
+    total = total + getTotalPoitsCost(points);
     this._totalField.innerHTML = total;
   }
 
@@ -193,7 +191,6 @@ export default class TripController {
           if (isSuccess) {
             controller.destroy();
             this._setDays();
-
             this.rerender();
             this.updateRouteInfo({points: this._pointsModel});
           }
@@ -210,11 +207,9 @@ export default class TripController {
             const currentSortType = this._pointsModel.getSortType();
             if (currentSortType === SortType.defaultType) {
               this._setDays();
-
               this.rerender();
             } else {
               this._setDays();
-
               this.renderSortedPoints(this._pointsModel.getSortedPoints());
             }
             this.updateRouteInfo({points: this._pointsModel});
@@ -232,11 +227,9 @@ export default class TripController {
           const currentSortType = this._pointsModel.getSortType();
           if (currentSortType === SortType.defaultType) {
             this._setDays();
-
             this.rerender();
           } else {
             this._setDays();
-
             this.renderSortedPoints(this._pointsModel.getSortedPoints());
           }
           this.updateRouteInfo({points: this._pointsModel});
@@ -274,7 +267,6 @@ export default class TripController {
       remove(this._slotList);
     }
     this.show();
-
     this.rerender();
   }
 }

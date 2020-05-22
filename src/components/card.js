@@ -42,9 +42,9 @@ export default class Card extends AbstractComponent {
 
           <div class="event__schedule">
           <p class="event__time">
-          <time class="event__start-time" datetime="2019-03-18TLIMIT:30">${moment(this._eventStart).format(`hh : mm`)}</time>
+          <time class="event__start-time" datetime="2019-03-18TLIMIT:30">${moment(this._eventStart).format(`HH : mm`)}</time>
           &mdash;
-          <time class="event__end-time" datetime="2019-03-18T11:00">${moment(this._eventEnd).format(`hh : mm`)}</time>
+          <time class="event__end-time" datetime="2019-03-18T11:00">${moment(this._eventEnd).format(`HH : mm`)}</time>
           </p>
           <p class="event__duration">${this._durationDays} ${this._durationHrs}H ${this._durationMins}M</p>
           </div>

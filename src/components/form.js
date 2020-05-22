@@ -263,7 +263,9 @@ export default class Form extends AbstractSmartComponent {
 
     this.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
       this._eventStart = evt.target.value;
-      this._eventEnd = evt.target.value;
+      if (this._eventEnd < evt.target.value) {
+        this._eventEnd = evt.target.value;
+      }
       this._applyFlatpickr();
     });
 

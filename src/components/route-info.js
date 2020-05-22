@@ -2,6 +2,8 @@ import AbstractComponent from './abstract-component.js';
 import moment from 'moment';
 import {getTotalPoitsCost} from '../constants.js';
 
+const POINTS_LIMIT = 3;
+
 export default class RouteInfoElement extends AbstractComponent {
   constructor(container) {
     super();
@@ -37,12 +39,12 @@ export default class RouteInfoElement extends AbstractComponent {
   }
 
   update({points}) {
-    this._points = points.getPointsAll();
+    this._points = points.getFilteredPoints();
 
     this._cost = getTotalPoitsCost(this._points);
 
     this._departurePlace = this._points[0].destination.name;
-    this._point = this._points.length > 3 ? `...` : this._points[1].destination.name;
+    this._point = this._points.length > POINTS_LIMIT ? `...` : this._points[1].destination.name;
     this._destination = this._points[this._points.length - 1].destination.name;
     this._departureDate = moment(this._points[0].eventStart).date();
     this._returndate = moment(this._points[this._points.length - 1].eventEnd).date();

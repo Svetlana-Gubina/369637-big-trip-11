@@ -58,9 +58,9 @@ export const replace = (newComponent, oldComponent) => {
 export const getEventsByFilter = (points, filterName) => {
   switch (filterName) {
     case FilterName.future:
-      return points.slice().filter((event) => new Date(event.eventStart).getTime() > Date.now());
+      return points.slice().filter((point) => new Date(point.eventStart).getTime() > Date.now());
     case FilterName.past:
-      return points.slice().filter((event) => new Date(event.eventEnd).getTime() < Date.now());
+      return points.slice().filter((point) => new Date(point.eventEnd).getTime() < (Date.now() - MILLISECONDS));
   }
 
   return points;
@@ -71,7 +71,7 @@ export const getDaysByFilter = (days, filterName) => {
     case FilterName.future:
       return days.slice().filter((day) => new Date(day.getDate()) > Date.now());
     case FilterName.past:
-      return days.slice().filter((day) => new Date(day.getDate()) < Date.now());
+      return days.slice().filter((day) => new Date(day.getDate()) < (Date.now() - MILLISECONDS));
   }
 
   return days;
@@ -112,7 +112,7 @@ const SECONDS = 60;
 const MILLISECONDS_IN_SECOND = 1000;
 const LIMIT = 9;
 
-export const getDays = (milliseconds) => {
+const getDays = (milliseconds) => {
   return milliseconds / (SECONDS * MINUTES * HOURS * MILLISECONDS_IN_SECOND);
 };
 
@@ -135,7 +135,7 @@ export const convertMillisecondsToTime = (milliseconds) => {
   const absoluteHours = Math.floor(hours);
   const hoursResult = absoluteHours > LIMIT ? absoluteHours : `0` + absoluteHours;
 
-  const minutes = (hours - absoluteHours) * 60;
+  const minutes = (hours - absoluteHours) * MINUTES;
   const absoluteMinutes = Math.floor(minutes);
   const minutesResult = absoluteMinutes > LIMIT ? absoluteMinutes : `0` + absoluteMinutes;
 
@@ -146,3 +146,19 @@ export const convertMillisecondsToTime = (milliseconds) => {
   };
 };
 
+export const getEventDates = (event) => {
+  const eventDuration = new Date(event.eventEnd) - new Date(event.eventStart);
+  const eventDurationDays = Math.ceil(getDays(eventDuration));
+
+  const eventdDates = [];
+  for (let i = 0; i < eventDurationDays; i++) {
+    let eventDateAndCount = {
+      dayCount: i,
+      date: new Date(new Date(event.eventStart).getTime() + i * MILLISECONDS).toISOString(),
+      dateNumber: moment(new Date(new Date(event.eventStart).getTime() + i * MILLISECONDS).toISOString()).date(),
+    };
+    eventdDates.push(eventDateAndCount);
+  }
+
+  return eventdDates;
+};

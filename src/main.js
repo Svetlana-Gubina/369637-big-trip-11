@@ -11,6 +11,7 @@ import {Position, render} from './utils.js';
 import {Tab, StorePrefix, STORE_VER, AUTHORIZATION, END_POINT, LoadingMessage} from './constants.js';
 import FilterController from './controllers/filter-controller.js';
 
+const OFFLINE_TITLE = ` [offline]`;
 const api = new API({endPoint: END_POINT, authorization: AUTHORIZATION});
 const STORE_PREFIX = StorePrefix.events;
 const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
@@ -83,12 +84,12 @@ headerCont.addEventListener(`click`, (evt) => {
 });
 
 window.addEventListener(`online`, () => {
-  document.title = document.title.replace(` [offline]`, ``);
+  document.title = document.title.replace(OFFLINE_TITLE, ``);
   apiWithProvider.sync();
 });
 
 window.addEventListener(`offline`, () => {
-  document.title += ` [offline]`;
+  document.title += OFFLINE_TITLE;
 });
 
 window.addEventListener(`load`, () => {

@@ -66,7 +66,7 @@ export const getfilteredArray = (array, item) => {
   if (index >= 0) {
     newArr.splice(index, 1);
   }
-  return newArr;
+  return newArr.sort();
 };
 
 export const AVAILABLE_EVENT_TYPES = [
@@ -102,13 +102,11 @@ export const getPreposition = (type) => {
 };
 
 const getOptionsAddedCost = (point) => {
-  let cost = [];
+  const optionsTotalCost = [];
   point.options.forEach((option) => {
-    if (option.hasOwnProperty(`isAdded`) && option.isAdded === true) {
-      cost.push(option.price);
-    }
+    optionsTotalCost.push(option.price);
   });
-  return cost.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  return optionsTotalCost.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 };
 
 export const getTotalPoitsCost = (points) => {
