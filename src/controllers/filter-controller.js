@@ -30,8 +30,10 @@ export default class FilterController {
     filterChecked.checked = true;
 
     const points = this._pointsModel.getPointsAll();
-    const futureEvents = getEventsByFilter(points, FilterName.future);
-    const pastEvents = getEventsByFilter(points, FilterName.past);
+    const futureEvents = [...getEventsByFilter(points, FilterName.future)];
+    const pastEvents = [...getEventsByFilter(points, FilterName.past)];
+
+
     if (futureEvents.length === 0) {
       const filterFuture = filters.find((filter) => filter.name === FilterName.future);
       filterFuture.disabled = true;

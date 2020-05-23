@@ -33,7 +33,6 @@ const tripControls = document.querySelector(`.trip-controls`);
 const menu = new Menu();
 render(tripControls, menu, Position.AFTERBEGIN);
 const filterController = new FilterController(tripControls, pointsModel);
-filterController.render();
 
 const controller = new TripController(tripEvents, pointsModel, addNewEventElement, routeInfo, apiWithProvider, filterController);
 
@@ -44,6 +43,7 @@ apiWithProvider.getData().then(function (points) {
     message.remove();
     routeInfo.update({points: pointsModel});
     routeInfo.render(tripMain);
+    filterController.render();
     const totalField = document.querySelector(`.trip-info__cost-value`);
     controller.render(totalField);
     controller.renderTotalCount();

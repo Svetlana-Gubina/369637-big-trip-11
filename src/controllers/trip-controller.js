@@ -41,7 +41,7 @@ export default class TripController {
   }
 
   _setDays() {
-    if (this._days) {
+    if (this._days.length) {
       this._days = [];
     }
 
@@ -49,12 +49,16 @@ export default class TripController {
 
     let count = START_COUNT;
     allPoints.forEach((item) => {
+
       const itemDates = getEventDates(item);
       for (let day of itemDates) {
         let nextDay = new Day(count, day.dateNumber, day.date);
         let dayIndex = this._days.findIndex((dayItem) => dayItem.getDateNumber() === day.dateNumber);
+
         if (dayIndex !== -1) {
-          this._days[dayIndex]._points.push(item);
+          if (!this._days[dayIndex]._points.includes(item)) {
+            this._days[dayIndex]._points.push(item);
+          }
         } else {
           count++;
           this._days.push(nextDay);
@@ -67,6 +71,7 @@ export default class TripController {
   renderDefault() {
     const currentFilter = this._pointsModel.getFilterName();
     const days = getDaysByFilter(this._days, currentFilter);
+
     for (let day of days) {
       const slots = day.getElement().querySelectorAll(`.trip-events__item`);
       for (let point of day._points) {
@@ -93,9 +98,9 @@ export default class TripController {
 
   rerender() {
     this._filterController.render();
-
     this._cardList.getElement().innerHTML = `<ul class="trip-days">
     </ul>`;
+    this._setDays();
     this._pointControllers = [];
     this.renderDefault();
   }
@@ -189,8 +194,8 @@ export default class TripController {
         .then((event) => {
           const isSuccess = this._pointsModel.addEvent(event);
           if (isSuccess) {
+
             controller.destroy();
-            this._setDays();
             this.rerender();
             this.updateRouteInfo({points: this._pointsModel});
           }
@@ -206,7 +211,6 @@ export default class TripController {
           if (isSuccess) {
             const currentSortType = this._pointsModel.getSortType();
             if (currentSortType === SortType.defaultType) {
-              this._setDays();
               this.rerender();
             } else {
               this._setDays();
@@ -226,7 +230,6 @@ export default class TripController {
           this._pointsModel.removeEvent(oldData.id);
           const currentSortType = this._pointsModel.getSortType();
           if (currentSortType === SortType.defaultType) {
-            this._setDays();
             this.rerender();
           } else {
             this._setDays();
@@ -262,7 +265,6 @@ export default class TripController {
     this._pointControllers.forEach((pointController) => pointController.destroy());
     this._pointControllers = [];
     this._subscriptions = [];
-
     if (this._slotList) {
       remove(this._slotList);
     }

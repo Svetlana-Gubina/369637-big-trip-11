@@ -3,7 +3,7 @@ import Select from './select.js';
 import Model from '../models//model.js';
 import Offer from './offer.js';
 import CustomValidation from './custom-validation.js';
-import {check, uncheck, render, Position, checkInput, show, hide} from '../utils.js';
+import {check, uncheck, render, Position, checkInput, show, hide, getIncreasedDateEndForFlatpickr} from '../utils.js';
 import {AVAILABLE_EVENT_TYPES, MOVE_EVENT_TYPES, STAY_EVENT_TYPES, DefaultLabels, getNamedElement, getPreposition, getTypeAvailableOptions, getOptionForTitle, INVALIDITY_MESSAGE, REG} from '../constants.js';
 import flatpickr from '../../node_modules/flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
@@ -229,17 +229,21 @@ export default class EditEvent extends AbstractSmartComponent {
       enableTime: true,
       dateFormat: `Z`,
       altInput: true,
-      altFormat: `d/m/Y H:m`,
+      altFormat: `d/m/Y H:i`,
       defaultDate: this._eventStart,
+      defaultHour: this._hoursStart,
+      defaultMinute: this._minutesStart,
     });
 
     this._flatpickr = flatpickr(end, {
       enableTime: true,
       dateFormat: `Z`,
       altInput: true,
-      altFormat: `d/m/Y H:m`,
-      minDate: this._eventStart,
+      altFormat: `d/m/Y H:i`,
+      minDate: getIncreasedDateEndForFlatpickr(this._eventStart),
       defaultDate: this._eventEnd,
+      defaultHour: this._hoursEnd,
+      defaultMinute: this._minutesEnd,
     });
   }
 
@@ -387,7 +391,7 @@ export default class EditEvent extends AbstractSmartComponent {
     this.getElement().querySelector(`#event-start-time-1`).addEventListener(`change`, (evt) => {
       this._eventStart = evt.target.value;
       if (this._eventEnd < evt.target.value) {
-        this._eventEnd = evt.target.value;
+        this._eventEnd = getIncreasedDateEndForFlatpickr(this._eventStart);
       }
       this._applyFlatpickr();
     });

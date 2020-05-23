@@ -8,6 +8,10 @@ export const REG = /^\d+$/;
 
 export const HIDDEN_CLASS = `visually-hidden`;
 
+const MILLISECONDS_IN_MINUTE = 60000;
+const DIFFERENCE = 10;
+export const TIME_DIFFERENCE = MILLISECONDS_IN_MINUTE * DIFFERENCE;
+
 export const StorePrefix = {
   events: `bigTrip-events-localstorage`,
   destinations: `bigTrip-destinations-localstorage`,

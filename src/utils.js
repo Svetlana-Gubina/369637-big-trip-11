@@ -1,4 +1,4 @@
-import {FilterName, SortType, HIDDEN_CLASS, MILLISECONDS} from "./constants.js";
+import {FilterName, SortType, HIDDEN_CLASS, MILLISECONDS, TIME_DIFFERENCE} from "./constants.js";
 import moment from 'moment';
 
 export const show = (element) => {
@@ -161,4 +161,8 @@ export const getEventDates = (event) => {
   }
 
   return eventdDates;
+};
+
+export const getIncreasedDateEndForFlatpickr = (date) => {
+  return new Date(new Date(date).getTime() + TIME_DIFFERENCE).toISOString();
 };
