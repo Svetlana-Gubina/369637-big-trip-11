@@ -65,12 +65,12 @@ headerCont.addEventListener(`click`, (evt) => {
   if (evt.target.tagName === `A`) {
     switch (evt.target.textContent) {
       case Tab.tableTab:
-        controller.show();
+        controller.showTab();
         controller.showSortComponent();
         statisticsComponent.hide();
         break;
       case Tab.statsTab:
-        controller.hide();
+        controller.hideTab();
         controller.hideSortComponent();
         statisticsComponent.show();
         break;

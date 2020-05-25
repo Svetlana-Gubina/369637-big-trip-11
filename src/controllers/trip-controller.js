@@ -74,7 +74,8 @@ export default class TripController {
 
     for (let day of days) {
       const slots = day.getElement().querySelectorAll(`.trip-events__item`);
-      for (let point of day._points) {
+      const dayPoints = day.getPoints();
+      for (let point of dayPoints) {
         let slot = Array.from(slots).find((slotItem) => slotItem.id === point.id);
         this._renderPoint(point, slot);
       }
@@ -159,6 +160,27 @@ export default class TripController {
     this._cardList.show();
   }
 
+  showTab() {
+    const currentSortType = this._pointsModel.getSortType();
+    if (currentSortType === SortType.defaultType) {
+      this.show();
+    } else {
+      const pointsSortedByCurrentType = this._pointsModel.getSortedPoints();
+      this.renderSortedPoints(pointsSortedByCurrentType);
+    }
+  }
+
+  hideTab() {
+    const currentSortType = this._pointsModel.getSortType();
+    if (currentSortType === SortType.defaultType) {
+      this.hide();
+    } else {
+      if (this._slotList) {
+        remove(this._slotList);
+      }
+    }
+  }
+
   showSortComponent() {
     this._sortComponent.show();
   }
@@ -194,7 +216,6 @@ export default class TripController {
         .then((event) => {
           const isSuccess = this._pointsModel.addEvent(event);
           if (isSuccess) {
-
             controller.destroy();
             this.rerender();
             this.updateRouteInfo({points: this._pointsModel});
